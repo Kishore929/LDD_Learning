@@ -15,7 +15,7 @@ int main()
 	char buff[4099];
 	struct input_event ev;
 
-	fd1=open("/dev/input/event5",O_RDONLY); // Mouse
+	fd1=open("/dev/input/event4",O_RDONLY); // Mouse
 	if(fd1<0)
 		printf("error while open the file event1\n");
 	fd2=open("/dev/input/event2",O_RDONLY);// Keyboard
