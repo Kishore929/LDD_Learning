@@ -9,7 +9,7 @@ main()
 	int shmid;
 	char *msg;
 	
-	if((shmid=shmget(10,1024,666|IPC_CREAT))==-1) {
+	if((shmid=shmget(10,1024,0666|IPC_CREAT))==-1) {
 		perror("shmget");
 		exit(1);
 	}
