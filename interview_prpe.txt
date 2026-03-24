@@ -1,0 +1,2189 @@
+
+sankeerth billakanti
+qualcomm
+
+
+SELF INTRO
+---------------------------------------------------------------------------------------------------------------------
+“Hi, my name is Kishore.
+I have around 4 years of experience in Embedded Linux and Linux Kernel development.
+Currently, I am working in the Linux kernel domain, mainly focusing on device driver development, BSP bring-up, and board support activities.
+
+I have hands-on experience in developing and modifying SPI and I2C device drivers, debugging kernel issues, and working closely with hardware teams during new board bring-up.
+
+In my latest company, I worked on a multi-driver framework project, which was designed to simplify and standardize device registration in the kernel.
+Along with this, I have worked on Xilinx platforms like Zynq, ZynqMP, and Versal boards.
+
+My role also includes analyzing pin-mux configurations, checking BSP configurations, validating peripherals like RTC sensors, and ensuring proper device initialization during boot.
+
+Overall, my experience is more towards low-level Linux kernel, driver development, and board bring-up activities.”
+
+
+Project Overview (High-Level)
+-----------------------------------------------------------------------------------------------------------------------
+“The main goal of this project was to create a common framework for registering multiple devices in the Linux kernel without writing separate registration code for each new device.”
+
+Earlier, whenever a new device was added, we had to write individual driver registration code, update platform data, and sometimes modify kernel source files. This was time-consuming and error-prone.
+
+So, we designed a multi-driver framework that abstracts the device registration logic and provides a generic way to register devices dynamically.”
+
+🔹 Problem Statement (Why This Project?)
+“In our product, new peripherals were frequently added on different boards.
+For every new device, developers had to manually register drivers, create boilerplate code, and ensure correct initialization. This increased development time and maintenance effort.”
+
+🔹 Solution (Your Framework)
+“We developed a centralized framework where the registration logic is written only once.
+Whenever a new device comes, instead of writing a separate registration code, we just add the device details into the framework configuration.
+The framework takes care of registering the device automatically during boot.”
+
+This framework is mainly meant for device registration and initialization, not the functional driver logic itself.”
+
+🔹 How the Framework Works (Technical Explanation – Light but Solid)
+You can explain like this:
+“The framework maintains a common data structure that holds information about all supported devices such as device name, bus type (SPI/I2C), device ID, and initialization callbacks.”
+
+During kernel initialization, the framework iterates over this structure and registers the devices using standard kernel APIs like platform_driver_register(), spi_register_driver(), or i2c_add_driver() based on the device type.”
+
+So, when a new device is added, we only update the framework data and no separate driver registration code is needed.”
+
+
+🔹 Your Responsibilities in This Project
+This part is VERY IMPORTANT.
+“My responsibilities included designing and implementing the registration framework logic, integrating SPI and I2C drivers into the framework, and validating device registration during boot.”
+I was also involved in debugging driver probe issues, verifying device tree entries, and ensuring correct device initialization.”
+
+✅ BOARD BRING-UP & BSP EXPERIENCE
+Now smoothly transition to hardware exposure.
+
+🔹 Boards You Worked On
+“In my current company, we work on Xilinx platforms such as Zynq, ZynqMP, and Versal boards.”
+
+🔹 Your Role in New Device Bring-Up
+“Whenever a new device or peripheral is added to the board, I am responsible for initial bring-up activities.”
+
+Explain clearly:
+Checking pin-mux configuration
+Verifying device tree entries
+Ensuring correct clock and reset configuration
+Validating BSP support
+Debugging probe failures
+
+🔹 RTC & Sensor Experience
+“I have worked with RTC sensors, where I validated I2C communication, checked driver probe, verified time read/write operations, and debugged issues using kernel logs and I2C tools.”
+
+✅ TOOLS & DEBUGGING (Optional but Powerful)
+If interviewer asks more:
+dmesg
+printk
+I2C tools
+Kernel logs
+Device tree debugging
+oscilloscope / logic analyzer (if applicable)
+
+✅ CLOSING LINE (Very Important)
+End confidently:
+“Overall, my experience is focused on Linux kernel driver development, reusable framework design, and board bring-up activities, and I am very comfortable working close to hardware and kernel space.”
+						
+						CLOSEING INTRO
+------------------------------------------------------------------------------------------------------------------
+
+
+Debugged timing issues using printk scope and fixed repeated NACK conditions.
+---------------------------------------------------------------------------------------
+“I was facing repeated NACKs during I2C transactions. I used printk logs at each stage of the transfer to trace the execution timing. From the logs, I observed that the driver was accessing the device too early, before the slave was ready. After adding proper delays and fixing the initialization sequence, the NACK issue was resolved.”
+
+Using Xilinx platforms helped us quickly prototype and validate features before deploying them into production hardware.
+
+“We integrated sensor drivers on ZynqMP to collect real-time environmental data. That data was processed in FPGA for filtering and sent to user-space applications. This enabled accurate and low-latency monitoring in the final embedded product.”
+
+If They Ask: “So did customer use ZCU102 directly?”
+------------------------------------------------------------------------------------------
+“No, development was done on reference boards like ZCU102. Final product used custom hardware derived from the same SoC.”
+
+
+
+“I didn’t implement the I2C protocol itself, since it’s standardized. I implemented the sensor driver on top of I2C, including device tree integration, register configuration, power management, error handling, and user-space interfaces.”
+
+The sensor hardware determines data readiness. Once internal ADC conversion completes, the sensor asserts its interrupt line, which Linux handles via the IRQ subsystem.
+
+
+I worked on Xilinx Zynq-7000 with Cortex-A9, ZynqMP with Cortex-A53 and R5, and Versal with Cortex-A72. CPU frequencies ranged from around 800 MHz to 1.5 GHz depending on the platform. I used PS-based I2C and SPI controllers, configured their clocks based on sensor requirements, and worked on boards like ZedBoard, ZCU102, and VCK190.
+
+
+fork	Duplicate process
+vfork	Share address space temporarily
+exec	Replace process image
+clone	Fine-grained process/thread creation
+
+
+
+
+
+Calibration is the process of converting raw sensor data into accurate physical values by compensating for sensor-specific errors using factory-provided or measured calibration parameters.
+
+“Linux binds my driver using Device Tree, the driver initializes the sensor in probe(), reads raw data via I2C/SPI using interrupts or polling, applies calibration and scaling, stores data in driver structures, and exposes it to user space via sysfs or character devices.”
+
+
+
+system call flow
+------------------------------
+User app → glibc wrapper → syscall instruction → kernel entry → sys_read → VFS → driver read → copy_to_user → return → glibc → user app
+
+“When a user calls read(), it goes to the glibc wrapper, which triggers a system call using SVC/syscall instruction. The CPU switches to kernel mode, the kernel executes sys_read, goes through the VFS layer, calls the driver’s read function, copies data to user space, and returns back through glibc to the application.”
+
+User program == system call works
+----------------------------------
+ → glibc wrapper
+ → syscall instruction
+ → kernel entry
+ → sys_call_table
+ → sys_read()
+ → VFS
+ → driver read()
+ → copy_to_user()
+ → return to user
+
+
+
+I2C protocol already exists, so what new thing did you implement?”
+------------------------------------------------------------------
+I added sensor support via device tree.
+I handled sensor initialization and calibration.
+I implemented error handling and retries.
+I exposed sensor data to user space.
+I debugged sensor bring-up issues.------Used i2cdetect, i2cget, i2cset
+
+I didn’t implement the I2C protocol itself, since it’s standardized. I implemented the sensor driver on top of I2C, including device tree integration, register configuration, power management, error handling, and user-space interfaces
+
+
+
+
+sysfs entries from user space
+------------------------------------------
+In my driver, I used sysfs to expose device parameters to user space. I created kobject attributes with show and store callbacks, allowing user applications to configure hardware behavior without ioctl.
+
+static struct kobj_attribute value_attr = __ATTR(value, 0664, value_show, value_store);
+
+static int __init my_driver_init(void)
+{
+    my_kobj = kobject_create_and_add("my_device", kernel_kobj);
+    if (!my_kobj)
+        return -ENOMEM;
+
+    sysfs_create_file(my_kobj, &value_attr.attr);
+    return 0;
+}
+
+
+diff /sysfs - /dev
+------------------------------------
+/dev is intended for data transfer between user space and kernel, supporting binary data, DMA, mmap, and high-throughput operations.
+/sys is intended for configuration and introspection, exposing kernel object attributes as simple text files.
+Although both allow read/write, they serve different design purposes and should not be mixed.
+
+sysfs interview one-liner:
+-----------------------------
+Sysfs exposes driver parameters as readable/writable files in /sys.
+Using DEVICE_ATTR, users can read/write device settings without ioctl.
+
+procfs one-liner:
+---------------------
+Procfs is for kernel debug and runtime info, visible under /proc.
+
+
+
+dead-lock
+-----------------
+A deadlock occurs when two or more execution contexts (processes, threads, IRQ contexts) wait forever for resources held by each other, so no one can make progress.
+Lock protects data, sleep delays unlock — that blocks the system
+
+Thread A              Thread B
+--------              --------
+lock(A)               lock(B)
+lock(B)   ← waits     lock(A)  ← waits
+
+avoid dead-lock
+------------------
+Always acquire locks in the same global order
+Avoid holding multiple locks
+Never sleep while holding a lock
+Reduce lock scope
+
+Deadlock occurs when circular lock dependencies exist. In kernel we avoid it using strict lock ordering, minimizing lock scope, never sleeping while holding spinlocks, using trylock, lockless mechanisms like atomic or RCU, and tools like lockdep.
+
+Sleeping while holding a lock is dangerous because the task may be descheduled while still owning the lock, preventing other tasks from acquiring it. This can lead to deadlocks, system stalls, or kernel panics. In particular, spinlocks must never be used with sleeping operations, and in interrupt context sleeping is not allowed at all because the scheduler cannot run.
+
+What happens?
+-------------------------
+Task A acquires the lock
+Task A goes to sleep
+Task B tries to acquire the same lock
+Task B blocks
+Task A is sleeping → not running
+Nobody can release the lock
+💥 System is stuck
+This is a deadlock or system stall
+
+
+Kernel key objects
+----------------------------
+task_struct
+ → files_struct
+   → struct file (fd)
+     → inode
+     → file_operations
+       → driver read()
+
+
+
+Spinlocks are used in atomic contexts like ISR where sleeping is not allowed.
+Mutex is a sleeping lock used in process context where blocking is allowed.
+Semaphore allows multiple holders and is useful for resource counting.
+Atomic variables provide lock-free synchronization for simple shared data.
+RCU is used when read performance is critical and readers must not block.
+
+🔹 Mutex
+A mutex is a sleeping lock with ownership, allowing only one holder at a time.
+
+🔹 Semaphore
+A semaphore is a counting synchronization mechanism that allows multiple holders.
+
+Mutex is a sleeping lock with strict ownership and priority inheritance, used for mutual exclusion. 
+Semaphore is a counting mechanism without ownership, mainly used for resource management.
+
+Mutual exclusion means:
+At any time, only ONE thread/process can enter the critical section.
+
+Resource management means:
+Managing access to a limited number of identical resources.
+More than one thread can enter
+But not more than available resources
+
+Producer first waits for an empty buffer slot using semaphore, then uses mutex to safely write into the shared buffer, and finally signals the consumer that data is available.
+Consumer waits for available data using semaphore, safely reads the buffer using mutex, and then signals producers that space is available.
+
+Even if no other interrupt exists, sleeping in ISR is not allowed because ISR has no process context and cannot interact with the scheduler. Instead, we defer work to a bottom half or threaded interrupt.
+
+
+
+Golden Interview Rule (MEMORIZE)
+--------------------------------------
+Context			Allowed Mechanism
+----------------------------------------------
+ISR			Spinlock, Atomic, RCU
+Process context		Mutex, Semaphore, Atomic, RCU
+Long sleep		Mutex, Semaphore
+Short critical		Spinlock
+Simple counter		Atomic
+Heavy reads		RCU
+
+
+static wait_queue_head_t wq;
+static spinlock_t lock;
+
+in isr: wake_up_interruptible(&wq);
+in bottom half:  wait_event_interruptible(wq, data_ready);
+
+
+
+Mutex-user space thread
+-------------------------
+
+#include <pthread.h>
+#include <stdio.h>
+
+int count = 0;
+pthread_mutex_t lock;
+
+void *thread_fn(void *arg)
+{
+    pthread_mutex_lock(&lock);
+    count++;
+    pthread_mutex_unlock(&lock);
+    return NULL;
+}
+
+int main()
+{
+    pthread_t t1, t2;
+    pthread_mutex_init(&lock, NULL);
+
+    pthread_create(&t1, NULL, thread_fn, NULL);
+    pthread_create(&t2, NULL, thread_fn, NULL);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    printf("count = %d\n", count);
+}
+
+
+
+#include <linux/init.h>//Required header for the Intialization and Cleanup Functionalities....
+#include <linux/module.h>//This Header contains the necessary stuff for the Module
+#include <linux/kernel.h> /* printk() */
+#include <linux/slab.h> /* kmalloc() */
+#include <linux/fs.h> /* everything... */
+#include <linux/errno.h> /* error codes */
+#include <linux/types.h> /* size_t */
+#include <linux/proc_fs.h>
+#include <linux/fcntl.h> /* O_ACCMODE */
+//#include <linux/system.h> /* cli(), *_flags */
+#include <linux/uaccess.h> /* copy_from/to_user */
+
+static int __init CharDevice_init(void)
+{
+	int result;
+	int MAJOR,MINOR;
+	dev_t Mydev;
+	Mydev = MKDEV(255,0);//Create a device number
+	MAJOR=MAJOR(Mydev);
+	MINOR=MINOR(Mydev);
+	printk("\n Mydev is  = %d",Mydev);
+	printk("\nThe Major Number is %d...THe Minor Number is %d\n",MAJOR,MINOR);
+	result=register_chrdev_region(Mydev,1,"MyCharDevice");//register device region.....
+	if(result<0)
+	{
+		printk(KERN_ALERT "\nThe Region requested for is not obtainable\n");
+		return(-1);
+	}
+	
+	my_cdev = cdev_alloc();//allocate memory to Char Device structure
+	my_cdev->ops = &fops;//link our file operations to the char device
+
+	result=cdev_add(my_cdev,Mydev,1);//Notify the kernel abt the new device
+	
+	if(result<0)
+	{
+		printk(KERN_ALERT "\nThe Char Devide has not been created......\n");
+		return (-1);
+	}
+	return 0;
+}
+
+
+static int __init
+devfile_init (void)		/* Constructor */
+{
+  printk (KERN_INFO "devfile registered");
+  if (alloc_chrdev_region (&first, 0, 1, "devfile") < 0)
+    {
+      return -1;
+    }
+  if ((cl = class_create (THIS_MODULE, "chardrv")) == NULL)
+    {
+      unregister_chrdev_region (first, 1);
+      return -1;
+    }
+  if (device_create (cl, NULL, first, NULL, "mydev") == NULL)
+    {
+      class_destroy (cl);
+      unregister_chrdev_region (first, 1);
+      return -1;
+    }
+  cdev_init (&c_dev, &devfile_fops);
+  if (cdev_add (&c_dev, first, 1) == -1)
+    {
+      device_destroy (cl, first);
+      class_destroy (cl);
+      unregister_chrdev_region (first, 1);
+      return -1;
+    }
+  return 0;
+}
+
+static void __exit
+devfile_exit (void)		/* Destructor */
+{
+  cdev_del (&c_dev);
+  device_destroy (cl, first);
+  class_destroy (cl);
+  unregister_chrdev_region (first, 1);
+  printk (KERN_INFO "chardev unregistered");
+}
+
+
+----------------------------------------------------------------------------------
+
+static const struct of_device_id omap_gpio_match[] = {
+	{
+		.compatible = "ti,omap4-gpio",
+		.data = &omap4_pdata,
+	},
+	{
+		.compatible = "ti,omap3-gpio",
+		.data = &omap3_pdata,
+	},
+	{
+		.compatible = "ti,omap2-gpio",
+		.data = &omap2_pdata,
+	},
+	{ },
+};
+MODULE_DEVICE_TABLE(of, omap_gpio_match);
+#endif
+
+static struct platform_driver omap_gpio_driver = {
+	.probe		= omap_gpio_probe,
+	.remove		= omap_gpio_remove,
+	.driver		= {
+		.name	= "omap_gpio",
+		.pm	= &gpio_pm_ops,
+		.of_match_table = of_match_ptr(omap_gpio_match),
+	},
+};
+
+---------------------------------------------------------------------------------------
+
+create /dev node
+-----------------------------------------
+mknod /dev/<name> c <major> <minor>
+
+
+syntax MAKEFILE
+------------------------------------------
+obj-m += char.o
+
+all:
+	make -C /lib/modules/uname -r/build M=$(shell pwd) modules
+	#make -C /usr/src/linux M=$(shell pwd) modules
+clean:
+	#make -C /usr/src/linux M=$(shell pwd) clean
+	make -C /lib/modules/uname -r/build M=$(shell pwd) clean
+
+
+
+own size of operator
+-------------------------------
+#define MY_SIZEOF(type) ((size_t)((char*)(&type + 1) - (char*)(&type)))
+
+
+store a value in a particular bit positions
+-------------------------------------------------------
+STEP 1: How many bits?
+------------------------------------------
+number of bits = (end - start + 1)
+
+Example:
+Bits 2 to 5
+5 - 2 + 1 = 4 bits
+
+🧠 STEP 2: Create base mask of 1s
+------------------------------------------
+Create n 1s where n = number of bits.
+
+For 4 bits:
+1111  (binary)
+
+(1 << n) - 1
+
+Example:
+(1 << 4) - 1 = 0b1111
+
+🧠 STEP 3: Shift mask to correct position
+------------------------------------------
+Shift left by the start bit.
+
+mask = ((1 << n) - 1) << start;
+
+Example (bits 2–5):
+mask = ((1 << 4) - 1) << 2;
+
+Binary:
+
+0000 1111  << 2  =  0011 1100
+
+So:
+MASK = 0x3C
+MASK = ((1 << (end - start + 1)) - 1) << start;
+
+STEP 4: What operation do they want?
+------------------------------------
+Clear bits
+data &= ~mask;
+
+Set bits (force to 1)
+data |= mask;
+
+Store value
+data = (data & ~mask) | ((value << start) & mask);
+
+Extract value
+value = (data & mask) >> start;
+
+final result
+------------
+MASK = ((1 << (end - start + 1)) - 1) << start;
+data = (data & ~MASK) | ((value << no.of bits(n)) & MASK);
+
+
+
+Bit-manipulation
+--------------------------
+int setBit(int n, int k){ return n | (1<<k); }
+int clearBit(int n,int k){ return n & ~(1<<k); }
+int toggleBit(int n,int k){ return n ^ (1<<k); }
+int checkBit(int n,int k){ return (n>>k)&1; }
+
+
+int isPowerOf2(int n){
+    return n && !(n & (n-1));
+}
+
+unsigned int reverseBits(unsigned int n){
+    unsigned int rev=0;
+    for(int i=0;i<32;i++){
+        rev = (rev<<1) | (n&1); // take last bit
+        n >>= 1;
+    }
+    return rev;
+}
+
+
+int findSingle(int a[],int n){
+    int x=0;
+    for(int i=0;i<n;i++)
+        x ^= a[i];
+    return x;
+}
+
+
+
+Expression	Compiler sees	Pointer		Value
+--------------------------------------------------------------
+*p++		*(p++)		moves →		same
+*++p		*(++p)		moves →		same
+(*p)++		explicit	same		increases
+++*p		++(*p)		same		increases
+*p--		*(p--)		moves ←		same
+*--p		*(--p)		moves ←		same
+(*p)--		explicit	same		decreases
+--*p		--(*p)		same		decreases
+
+
+
+
+
+
+
+HOW driver requests interrupt
+------------------------------
+request_threaded_irq(irq_number,
+                     isr_function,
+                     threaded_irq_function,
+                     IRQF_TRIGGER_RISING,
+                     "mpu6050",
+                     device);
+
+
+irqreturn_t keyboard_handler(int irq, void *id)
+{
+	//char ret;
+	printk("inside the handler\n");
+	//ret = inb(0x60);
+        //printk("The ret is %d \n",ret);
+        count++;
+        printk("The count is %d \n",count);
+        return IRQ_HANDLED;
+}
+
+In the Top half:
+----------------
+// 1. Clear interrupt in sensor register (important)
+    mpu6050_clear_interrupt();
+
+// 2. Tell kernel to run threaded handler
+    return IRQ_WAKE_THREAD; 
+
+In the Bottom half:
+-------------------
+// Slow and long work is done here
+
+    uint8_t data[128];
+    mpu6050_read_fifo(data);      // read sensor buffer
+    process_motion_data(data);    // filtering, calculations
+    wake_up_process();            // notify user space
+
+    return IRQ_HANDLED;
+
+
+
+ISR context: why sleep is impossible
+Interrupt context:
+------------------------
+No process context
+No scheduler
+No stack for rescheduling
+
+So:
+No sleeping
+No mutex
+No semaphore (sleeping)
+Only spinlocks / atomics allowed
+
+Even if:
+“Only one interrupt occurs and CPU is focused”
+Still ❌ NOT allowed
+
+Because:
+Kernel design rule
+Interrupt context must finish fast
+Scheduler cannot run
+
+
+How kernel knows interrupt occurred?
+---------------------------------------
+Because you request IRQ number associated with GPIO or controller:
+irq_number = gpiod_to_irq(gpio_pin);
+request_threaded_irq(irq_number, ...);
+As soon as GPIO interrupt triggers → kernel checks irq_number → calls your ISR.
+
+
+How do we know interrupt occurred & call ISR?
+----------------------------------------------
+Flow inside Linux kernel:
+
+Hardware raises IRQ signal
+Interrupt controller sends signal to CPU
+CPU pauses current task
+Kernel finds correct handler using irq number
+Kernel calls ISR function registered by driver
+ISR executes → returns IRQ_WAKE_THREAD
+Kernel schedules threaded_irq_handler()
+You do not manually call ISR — kernel automatically calls it.
+
+what happened in ISR
+------------------------------------------
+“ISRs use spinlocks because they cannot sleep. When a spinlock is held in ISR, other CPUs or processes spin until it’s released. Interrupts are disabled to avoid deadlocks.
+
+
+What exactly happens when ISR acquires a spinlock?
+Let’s say ISR does:
+spin_lock(&lock);
+
+Internally:
+CPU executes an atomic instruction
+(e.g., test_and_set, cmpxchg)
+Lock state becomes LOCKED
+ISR enters critical section
+Interrupts are typically disabled locally
+(using spin_lock_irqsave())
+
+This prevents:
+Deadlock from nested interrupts
+Same lock being re-acquired
+
+
+What happens if lock is held too long in ISR?
+-----------------------------------------------
+🔥 SERIOUS PROBLEMS
+High CPU usage
+Interrupt latency increases
+System becomes unresponsive
+Soft lockups / hard lockups
+Kernel watchdog may trigger.
+
+Why spin_lock_irqsave() is used in ISR?
+----------------------------------------------
+unsigned long flags;
+spin_lock_irqsave(&lock, flags);
+
+What it does:
+Saves interrupt state
+Disables local interrupts
+Acquires spinlock
+
+spin_unlock_irqrestore(&lock, flags);
+Releases lock
+Restores interrupt state
+
+
+
+What is a spinlock (kernel view)?
+------------------------------------------------
+A spinlock:
+Busy-waits (spins) until lock becomes available
+Does NOT sleep
+Uses atomic CPU instructions
+
+
+Complete timeline example ==>
+-------------------------------------------
+CPU0 (ISR)
+----------------------------------------
+Interrupt occurs
+→ ISR starts
+→ spin_lock_irqsave()
+→ critical section
+→ spin_unlock_irqrestore()
+→ ISR ends
+
+CPU1 (Process)
+-----------------------------------------
+spin_lock()
+→ spins (busy wait)
+→ lock released
+→ enters critical section
+
+Interrupt priority is managed by the hardware interrupt controller, and higher priority interrupts preempt lower ones.
+
+What is a Critical Section? (INTERVIEW MUST)
+-------------------------------------------
+A critical section is a part of code that accesses shared data and must not be executed by more than one execution context at the same time.
+
+Execution context can be:
+Process
+Thread
+ISR
+CPU core
+
+Memory visibility:
+“Spinlocks ensure that memory writes inside a critical section are visible to all CPUs by enforcing memory barriers.”
+
+Reordering:
+“Compilers and CPUs may reorder instructions for optimization, and locks prevent unsafe reordering.”
+
+What does this mean in simple words?
+When CPU acquires lock:
+Reloads data from memory
+Cannot use stale cache values
+
+When CPU releases lock:
+Flushes writes to memory
+Other CPUs see updated values
+
+
+
+Mechanism		Use Case				Sleep Allowed?
+--------------------------------------------------------------------------------------
+Mutex			Shared resource in process context 	(read/write)	✔
+Spinlock		ISR or fast critical section		❌
+Semaphore		Multi-access resource / blocking	✔
+Atomic			Counters, flags				N/A
+Waitqueue		Wait for event interrupt		✔
+Completion		One-time event sync			✔
+
+
+
+When do you use spinlock?
+In atomic/interrupt context to protect short critical sections (no sleep allowed).
+
+When do you use waitqueue?
+When user process must wait until data/event occurs (sleep allowed).
+
+
+
+
+Compact SPI Flow Summary (easy to memorize)
+---------------------------------------------
+1. Kernel matches DT compatible → probe()
+2. Configure spi->mode, bits_per_word, speed
+3. spi_setup()
+4. Prepare spi_transfer + spi_message
+5. Use spi_sync() for small transfers
+6. For large/continuous → allocate DMA + spi_async()
+7. Handle data + expose to user space
+
+
+
+SPI Transfer with DMA (High Speed)
+-------------------------------------------------
+Field/Function		One-line Meaning
+-----------------------------------------------
+.tx_dma / .rx_dma	Physical DMA address for transfer buffer.
+dma_map_single()	Convert virtual→physical addr for DMA.
+dma_unmap_single()	Release DMA mapping after transfer.
+msg.is_dma_mapped = 1	Tells kernel to use DMA not CPU copy.
+spi_async(spi, &msg)	Non-blocking transfer with DMA.
+
+
+Kernel Driver View for DMA
+----------------------------
+dma_request_channel()
+dma_map_single()
+spi_message.is_dma_mapped = 1
+spi_sync()
+dma_unmap_single()
+
+DMA flow
+---------------------------------
+spi_sync()
+   ↓
+SPI core
+   ↓
+SPI controller driver
+   ↓
+DMA engine starts
+   ↓
+DMA IRQ
+   ↓
+SPI controller ISR
+   ↓
+spi_message.complete()
+
+
+&spi0 {
+    bme280@0 {
+        compatible = "bosch,bme280";
+        reg = <0>;                    // CS pin index
+        spi-max-frequency = <1000000>; // 1MHz
+        status = "okay";
+    };
+};
+
+
+
+In DMA context:
+----------------------------------------------
+After DMA transfer finishes,
+
+DMA controller generates an interrupt,
+Driver handles the interrupt,
+Marks buffer as completed,
+Then informs user space (via poll/select/wakeup or callback).
+
+Important concept:
+We must not reuse or overwrite a buffer until transfer completion is acknowledged.
+
+If interviewer pushes:
+How acknowledge?
+
+Interrupt from DMA controller
+Completion callback
+completion API (complete(), wait_for_completion())
+Status register check
+Acknowledgement confirms that data transfer is completed and buffer is safe to use again.
+
+DMA acknowledgement happens through a completion interrupt, and the driver clears the status and marks the buffer as ready.
+
+In DMA context:
+A sync error can happen if cache is not properly synchronized with DMA memory, leading to stale or corrupted data.
+
+Common reasons:
+1️⃣ Cache not flushed before DMA write
+2️⃣ Cache not invalidated after DMA read
+3️⃣ Race condition between interrupt and process context
+4️⃣ Missing locks (mutex/spinlock)
+
+In Linux DMA:
+Use dma_sync_single_for_cpu()
+Use dma_sync_single_for_device()
+
+One-line safe answer:
+Sync errors happen due to improper cache management or missing synchronization during DMA or concurrent access.
+
+
+
+Frame drop issues happen when the system cannot process incoming frames fast enough, so buffers overflow and frames get discarded.
+
+Common reasons:
+1️⃣ Buffer overflow (insufficient buffers)
+2️⃣ DMA not fast enough
+3️⃣ CPU overload
+4️⃣ Interrupt latency high
+5️⃣ Bandwidth issue (SPI/I2C/MIPI slow)
+6️⃣ Improper synchronization
+
+In camera/video drivers:
+If user space doesn’t dequeue buffers fast enough, kernel drops frames.
+
+How to debug:
+Check buffer count
+Monitor CPU usage
+Check interrupt timing
+Verify DMA completion
+Strong one-line answer:
+Frame drops usually occur due to buffer starvation, high latency, or insufficient processing speed.
+
+
+
+A page fault occurs when a process tries to access a virtual memory page that is not currently mapped in physical memory.
+A page fault occurs when a process accesses a virtual address that is not currently mapped to physical memory.
+Page fault happens when a virtual address has no valid physical mapping in the page table.
+Page fault occurs only when a process accesses a virtual page that is not yet mapped in physical memory.
+Page fault happens only when the required page is not present in RAM, not on every memory access.
+
+
+What happens next:
+CPU triggers page fault exception
+Kernel checks if access is valid
+If valid → loads page into RAM (from disk or allocates new)
+If invalid → segmentation fault
+
+
+Virtual memory is not physically created like RAM. It is an abstraction created by the CPU and MMU using page tables.
+
+Where does it exist?
+Virtual memory exists in the process address space and is managed by the kernel using page tables stored in RAM.
+
+Important:
+Page tables are in RAM
+MMU hardware does the translation
+Virtual addresses are generated by CPU
+Strong interview one-liner:
+Virtual memory is created by the OS using page tables in RAM, and the MMU maps virtual addresses to physical memory.
+
+
+Demand paging is a memory management technique where pages are loaded into RAM only when they are actually accessed.
+
+Meaning:
+Memory is not loaded fully at process start.
+When a process accesses a page for the first time → page fault occurs.
+Kernel loads that page into RAM.
+Then execution continues.
+
+Why use it?
+Saves memory and improves efficiency.
+Strong interview one-liner:
+Demand paging loads a page into memory only when it is needed, triggered by a page fault.
+
+
+FROM WHERE to RAM
+---------------------
+Pages are brought into RAM either from disk (swap or executable file) or newly allocated by the kernel.
+If the page belongs to a file or was swapped out, it is loaded from disk. If it is anonymous memory like malloc, the kernel allocates a fresh page in RAM.
+
+Memory allocated in probe() must be freed in remove() using the corresponding free API. If devm_ managed APIs are used, the kernel automatically releases memory when the driver unloads.
+
+remove() (for platform/I2C/SPI driver)
+module_exit() (for module)
+kfree()
+vfree()
+dma_free_coherent()
+
+
+
+
+Full Boot Flow Summary
+----------------------------------------------
+Power ON
+ ↓
+CPU Reset
+ ↓
+BootROM (SoC ROM)
+ ↓
+Load FSBL/SPL → SRAM
+ ↓
+Initialize DDR
+ ↓
+Load U-Boot → DRAM
+ ↓
+Load Linux Kernel + DTB
+ ↓
+Kernel Initialization
+ ↓
+Mount RootFS
+ ↓
+Init / systemd
+ ↓
+User Applications
+
+After power on, CPU executes BootROM which loads the first stage bootloader into on-chip SRAM. This stage initializes the DRAM controller. Once DRAM is ready, the second stage bootloader like U-Boot is loaded into DRAM, which then loads the Linux kernel, device tree, and root filesystem. The kernel initializes drivers and starts the init process to launch user space.
+
+
+
+I2C Read/Write Sequences
+-----------------------------------------
+Write Register
+START → SlaveAddr+W → ACK → RegAddr → ACK → Data → ACK → STOP
+
+Read Register
+START → SlaveAddr+W → ACK → RegAddr → ACK
+RESTART → SlaveAddr+R → ACK → ReadData → NACK → STOP
+
+START → Addr+W → Reg → ACK → RESTART → Addr+R → Data → STOP
+Master writes reg address first (write mode)
+Master restarts bus and reads data (read mode)
+
+
+
+Linux I2C Driver APIs (one-line meaning)
+-------------------------------------------------
+API				Meaning
+i2c_add_driver()		Register I2C driver
+i2c_smbus_read_byte_data()	Read 1 byte from register
+i2c_smbus_write_byte_data()	Write one byte to register
+i2c_transfer()			Low-level manual transfer
+i2c_get_clientdata()		Get private device data
+i2c_set_clientdata()		Store device data
+.probe()			Runs when DT compatible matched
+.remove()			Runs when driver removed
+
+
+
+How Interrupt works with I2C sensors? (Your project)
+------------------------------------------------------
+Example: MPU6050 Motion Interrupt
+
+Hardware:
+MPU INT pin → GPIO → IRQ → Driver ISR
+
+
+
+Flow:
+Sensor detects motion
+Interrupt pin goes HIGH
+Kernel triggers ISR
+ISR quickly acknowledges interrupt
+Thread handler reads sensor using I2C
+Data sent to user-space
+
+
+&i2c1 {
+    mpu6050@68 {
+        compatible = "invensense,mpu6050";
+        reg        = <0x68>;          // slave address
+        interrupt-parent = <&gpio1>;  // gpio controller
+        interrupts = <5 IRQ_TYPE_EDGE_RISING>; // INT pin
+        status = "okay";
+    };
+};
+
+
+
+Important DT Properties (Interview Focus)
+----------------------------------------------------
+Property		Meaning
+compatible		Matches driver to node (must match string in driver)
+reg			Address or offset (I2C address/SPI CS/MMIO)
+interrupts		IRQ number & type
+status			okay enables device
+pinctrl			Pin configuration
+spi-max-frequency	SPI speed
+clocks			Input clock source
+vdd-supply		Power regulator
+
+
+
+
+How to read DT properties inside driver?
+------------------------------------------------
+struct device_node *np = client->dev.of_node;
+of_property_read_u32(np, "reg", &addr);
+From Device Tree	of_get_named_gpio()
+
+
+Advanced example: read GPIO
+irq = of_irq_get(np, 0);
+
+
+
+
+Example of Platform Driver with Device Tree
+-------------------------------------------
+Device Tree:
+my_sensor: sensor@0 {
+    compatible = "mycompany,my-sensor";
+    reg = <0x48000000 0x1000>; // Address + size
+    interrupts = <32>;
+    status = "okay";
+};
+
+
+PCI = Peripheral Component Interconnect
+PCB = Printed Circuit Board
+
+
+
+
+Major APIs and Purpose (one-line meaning)
+-----------------------------------------------------
+API				Meaning
+register_chrdev_region()	Reserve major/minor number
+alloc_chrdev_region()		Auto allocate device numbers
+cdev_init()			Attach file_operations
+cdev_add()			Register device with kernel
+copy_to_user()			Send data from kernel → user
+copy_from_user()		Receive data from user → kernel
+class_create/device_create	Create /dev/mydevice node automatically
+file_operations			Contains open/read/write/ioctl handlers
+
+
+
+static struct file_operations fops = {
+    .owner   = THIS_MODULE,
+    .open    = my_open,
+    .read    = my_read,
+    .write   = my_write,
+    .unlocked_ioctl = my_ioctl,
+    .release = my_release,
+};
+
+
+
+
+/------------------ INIT --------------------/
+static int __init my_init(void)
+{
+    alloc_chrdev_region(&dev, 0, 1, DEV_NAME);
+    pr_info("Major=%d Minor=%d\n", MAJOR(dev), MINOR(dev));
+
+    cdev_init(&my_cdev, &fops);
+    cdev_add(&my_cdev, dev, 1);
+
+    class_create(THIS_MODULE, DEV_NAME);
+    device_create(class_create, NULL, dev, NULL, DEV_NAME);
+
+    return 0;
+}
+
+/------------------ EXIT --------------------/
+static void __exit my_exit(void)
+{
+    device_destroy(class_create, dev);
+    class_destroy(class_create);
+    cdev_del(&my_cdev);
+    unregister_chrdev_region(dev, 1);
+}
+
+module_init(my_init);
+module_exit(my_exit);
+MODULE_LICENSE("GPL");
+
+
+
+How User Interacts with Driver
+--------------------------------------
+echo "data" > /dev/mychar   # goes to write()
+cat /dev/mychar             # goes to read()
+
+
+
+User program:
+-----------------------------------
+int fd = open("/dev/mychar",O_RDWR);
+read(fd,buf,100);
+write(fd,"test",4);
+ioctl(fd,1);
+close(fd);
+
+
+read() → get MPU6050 sensor data
+ioctl() → change sensitivity
+sysfs → show temperature only
+procfs → debug registers
+
+
+
+With copy_to_user:
+-----------------------------------
+Kernel Buffer ----COPY----> User Buffer (2 copies)
+
+With mmap:
+-----------------------------------
+Kernel Buffer <----Shared----> User Buffer (0 copy, same memory)
+So mmap is zero-copy, but requires setup.
+
+
+
+
+❓ When mmap is better?
+------------------------------------
+When you need high-speed/continuous data transfer, like:
+
+✔ Camera streaming
+✔ Framebuffer
+✔ Audio/Video
+✔ DMA buffers
+✔ Large real-time data
+
+Example: live IMU sensor streaming (1000+ samples/sec)
+
+
+
+❓ When copy_to_user is better?
+---------------------------------------
+When operations are:
+
+✔ Read small amount of data
+✔ Occasional sensor read
+✔ Simple control commands
+✔ Not performance critical
+
+Example:
+cat /dev/mpu6050       # returns one reading only
+
+
+
+
+What is MMIO?
+-------------------------
+Memory-Mapped I/O means hardware registers are mapped into processor’s address space like memory.
+Instead of special I/O instructions, CPU reads/writes registers like normal memory.
+
+
+Why need MMIO?
+-------------------------------
+Hardware registers exist at physical addresses, but kernel uses virtual address space.
+CPU cannot directly access physical address.
+Solution → ioremap() maps physical address to usable kernel virtual memory.
+
+
+
+
+platform_get_resource()	Get physical address from DT
+ioremap()		Convert physical to virtual address
+iounmap()		Release mapping
+readl(addr)		Read 32-bit register
+writel(val, addr)	Write 32-bit register
+
+
+
+
+Accessing registers is as easy as:
+------------------------------------------
+writel(value, base + offset);   // write register
+data = readl(base + offset);    // read register
+Just like array indexing but for hardware.
+
+
+
+
+memcpy() = copies raw bytes from one memory location to another.
+mmap() = allows user-space to directly access physical/kernel memory without read/write syscalls.
+memset() = Sets a memory region to a value (often 0).
+
+
+
+
+What is readl/writel?
+→ Safe APIs to access 32bit hardware registers.
+
+
+
+volatile -- NON-volatile
+------------------------------------
+volatile prevents compiler optimizations for variables that may change outside program control, whereas non-volatile variables allow optimization.
+
+Why volatile is needed (core idea)
+-------------------------------------------------
+Compilers:(optimization means in this context)
+Cache variables in registers
+Remove repeated reads
+Reorder instructions
+
+volatile prevents these optimizations for that variable.
+
+where we can use this volatile
+-----------------------------------------------
+Hardware status registers(may change some times)
+Variables shared with ISR
+Shared variables between threads (visibility only)
+
+
+
+One-line analogy
+-----------------------------
+non-volatile → read once, trust forever
+volatile → recheck every time
+
+volatile + register (IMPORTANT)
+volatile register int x;   // INVALID
+
+Why?
+volatile → must be in memory
+register → must be in CPU register
+Conflict → ❌ not allowed
+
+Definition
+“volatile prevents the compiler from optimizing access to variables that can change outside program control.”
+
+Use case
+“Used for hardware registers, ISR-shared variables, and polling flags.”
+
+Limitation
+“volatile does not provide synchronization or atomicity.”
+
+Optimization
+-------------------------
+Optimization is when the compiler improves performance by changing how code is executed, without changing its logical result.
+Optimization is the process where the compiler transforms your code to make it run faster, use less memory, or consume less power—without changing the program’s visible behavior.
+🧠 Simple analogy
+Optimization = rearranging your kitchen so you cook faster, but the food tastes the same.
+
+⭐ Final takeaway
+Optimizations are good—but unsafe when code depends on timing, hardware, or concurrency.
+
+
+Storage classes and lifetime and scope
+----------------------------------------------
+Storage class defines where a variable is stored, its scope, its lifetime, and its linkage.
+Scope defines where a variable is accessible, lifetime defines how long it exists, and storage class controls both along with memory location and linkage.
+auto, register, static, extern
+
+Scope defines where a variable can be accessed in the program.
+Lifetime defines how long a variable exists in memory during program execution.
+
+auto -> stack area 
+------------------------
+“auto variables exist only within a block and are destroyed when the block exits.”
+
+register -> CPU Rigister
+-------------------------------
+Same as auto, but suggests storage in CPU register
+“register hints the compiler to keep frequently used variables in CPU registers for faster access.”
+
+static (LOCAL) -> Data segment
+--------------------------------
+Retains value between function calls
+“A local static variable has block scope but program-wide lifetime.”
+
+
+extern -> Data segment
+---------------------------------
+Refers to a variable defined elsewhere
+“extern allows sharing global variables across multiple files.”
+
+
+Memory layout
+----------------------------
+Text / Code Segment
+“The text segment stores executable code and read-only data.”
+
+Data Segment
+“The data segment holds initialized global and static variables.”
+
+BSS Segment
+“BSS contains uninitialized global and static variables.”
+
+Heap
+“Heap is used for dynamic memory allocation at runtime.”
+
+Stack
+“Stack stores local variables and function call information.”
+
+
+What is Structure Padding?
+-------------------------------------------
+Structure padding is the extra unused bytes added by the compiler inside a structure to ensure proper memory alignment of its members.
+
+Definition
+“Structure padding is compiler-inserted unused memory to align structure members.”
+
+Reason
+“Padding improves memory access speed and avoids alignment faults.”
+
+Control
+“Padding can be reduced by reordering members or using packed attributes.”
+
+
+
+Difference of Mutex, semaphore, spinlock
+-----------------------------------------------
+A mutex allows only one thread to access a shared resource at a time.
+If lock is unavailable → thread sleeps
+Mutex provides mutual exclusion and puts the thread to sleep if the lock is unavailable.
+
+A spinlock provides mutual exclusion by busy-waiting.
+If lock is unavailable → CPU spins
+Spinlocks are used when sleeping is not allowed, such as in ISRs
+
+A semaphore is a counter-based synchronization mechanism.
+Binary semaphore (0/1)
+Counting semaphore (>1)
+Semaphores control access to a limited number of identical resources.
+
+Spinlocks waste CPU but are fast; mutex saves CPU but may sleep; semaphores control counts.
+
+
+
+What is MMU?
+------------------------
+MMU (Memory Management Unit) is a hardware component that translates virtual addresses → physical addresses.
+MMU enables address translation, memory protection, and virtual memory.”
+
+
+What is Virtual Memory?
+---------------------------------
+Virtual memory is an abstraction that gives each process its own private, continuous address space, independent of physical RAM.
+Virtual memory improves safety, efficiency, and programmability.
+
+why -> Process isolation, Memory protection, Efficient RAM usage, Simplified programming model
+
+Linux uses MMU to implement virtual memory by mapping per-process virtual addresses to physical memory using page tables. Memory is allocated lazily using demand paging, and page faults trigger physical allocation. VMAs describe memory regions, and TLB improves performance. This provides isolation, protection, and efficient memory usage.
+TLB (Translation Lookaside Buffer)
+
+
+
+
+Boot time optimization
+-----------------------------
+Bootloader Optimization (U-Boot)
+---------------------------
+Disabled unused commands and drivers
+Optimized environment variables
+Loaded kernel and DTB from faster storage (eMMC over NAND where possible)
+I reduced U-Boot delay and removed unused features to speed up handoff to the kernel.
+
+Kernel Optimization (BIGGEST IMPACT)
+--------------------------------
+Disabled unused drivers
+Built essential drivers into kernel instead of modules
+Disabled printk debug logs
+Reduced kernel decompression time
+I reduced kernel init time by removing unused drivers and debug features.
+
+User Space Optimization
+---------------------------------
+Reduced number of startup services
+Parallelized service startup
+Delayed non-critical services
+
+Started critical application early
+Reduced library dependencies
+Used static linking where possible
+
+“I optimized user space by minimizing startup services and launching the main application early.”
+I measured boot time before and after optimization using bootchart and kernel timestamps.
+I optimized boot time by reducing U-Boot delay, disabling unused kernel drivers and debug options, and minimizing user-space services. I measured improvements using kernel timestamps and bootchart, achieving a significant reduction from power-on to application readiness.
+
+
+
+
+Yocto patch create and apply
+-------------------------------------------------------
+In Yocto, patches are applied via .bbappend files. I create the patch using git diff, place it inside a files directory, and reference it in SRC_URI. Yocto applies the patch during the do_patch task. This approach keeps the base recipe clean and maintainable.
+
+
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+SRC_URI += "file://fix-issue.patch"
+
+
+
+Gpio driver apis
+----------------------------------------------------------
+Request GPIO		gpio_request()
+Free GPIO		gpio_free()
+Set input		gpio_direction_input()
+Set output		gpio_direction_output()
+Read			gpio_get_value()
+Write			gpio_set_value()
+From Device Tree	of_get_named_gpio()
+GPIO → IRQ		gpio_to_irq()
+Enable Interrupt	request_irq() / request_threaded_irq()
+Release IRQ		free_irq()
+Descriptor Method	gpiod_*()
+
+
+
+
+
+
+
+
+
+
+
+
+Allocation		Contiguous?			Best use
+-----------------------------------------------------------------------------
+kmalloc()		physical + virtual		small fast buffers
+kzalloc()		same as kmalloc but zeroed	safer memory init
+vmalloc()		virtual only			big memory blocks
+get_free_pages()	physical			DMA/network
+slab/kmem_cache		cache optimized			frequent object alloc
+
+
+Why DMA is faster?
+CPU is free; transfer happens directly between RAM and device.
+
+Q2: dma_alloc_coherent vs dma_map_single?
+coherent = permanent DMA-safe buffer
+map_single = temporary mapping
+
+Q3: Why DMA cannot use vmalloc?
+vmalloc is not physically contiguous.
+
+Q4: What triggers DMA completion?
+Interrupt from DMA controller → handled by ISR.
+
+Q5: How do you synchronize DMA and user read?
+waitqueue or completion + IRQ.
+
+Q6: Can we sleep inside DMA IRQ handler?
+❌ No — but threaded IRQ or workqueue can.
+
+
+
+Q1. How do you debug kernel panic?
+Analyze dmesg trace → bottom frame shows crash function.
+
+Q2. printk vs pr_info?
+pr_info is newer & formatted nicely using pr_fmt.
+
+Q3. How do we enable logs without recompiling?
+dynamic debug via /sys/kernel/debug/dynamic_debug/control.
+
+Q4. What is debugfs used for?
+Expose driver internals for debugging.
+
+Q5. When will printk not work?
+During early boot → use early_printk.
+
+
+debug usecase
+------------------------------------
+printk/pr_x     → logging
+dmesg          → view kernel logs
+dynamic debug  → enable logs without rebuild
+debugfs        → view internal values
+ftrace         → trace function execution
+kgdb           → step debugging
+perf           → performance profiling
+
+I identify crash type, look at PC, analyze call trace, then fix the driver logic
+Mutex cannot be used in ISR because it may sleep.
+KASAN is useful for detecting use-after-free bugs.
+
+
+What is a Macro
+---------------------
+A macro is a preprocessor substitution.
+
+Key properties of macros
+Happens before compilation
+No type checking
+No function call overhead
+Can cause side effects
+
+
+
+What is an Inline Function?
+-----------------------------
+An inline function is a real function, but the compiler is requested to expand it inline.
+
+Key properties of inline
+Happens at compile time
+Has type checking
+Safer than macros
+Compiler may ignore inline
+
+
+Macro:
+“A macro is a preprocessor directive that performs textual substitution before compilation.”
+
+Inline:
+“An inline function is a real function where the compiler may replace the call with the function body.”
+
+Difference:
+“Macros lack type safety and can cause side effects, whereas inline functions are safer and type-checked.”
+
+
+
+
+C - Programming and Bit manuplations
+----------------------------------------------------------------------
+
+Swap nibbles using bits
+-------------------------------------------
+#include <stdio.h>
+#include <stdint.h>
+
+uint8_t swapnibble(uint8_t x)
+{
+    return ((x & 0x0F) << 4) | ((x & 0xF0) >> 4);
+}
+
+int main()
+{
+    uint8_t x = 0xAB;
+    uint8_t y = swapnibble(x);
+    printf("Swapped nibble: 0x%X\n", y);
+    return 0;
+}
+
+
+// SWAP 6 AND 9 BIT POSITIONS
+------------------------------------------------------------------------
+#include <stdio.h>
+
+int swap_6th_9th_bit(int x)
+{
+    int bit6 = (x >> 5) & 1;   // 6th bit (position 5)
+    int bit9 = (x >> 8) & 1;   // 9th bit (position 8)
+
+    // Swap only if bits are different
+    if (bit6 != bit9) {
+        x ^= (1 << 5) | (1 << 8);
+    }
+
+    return x;
+}
+
+int main()
+{
+    int x = 164;   // Example value
+
+    printf("Before swap: %d\n", x);
+    printf("After  swap: %d\n", swap_6th_9th_bit(x));
+
+    return 0;
+}
+
+
+------------------------------------------------------------------------
+
+Reverse Linked list
+---------------------------------------------
+Node *prev= NULL, *curr = head;, *next=NULL;
+reverse (Node *curr){
+while(curr){
+next = curr->next;
+curr->next = prev;
+prev = curr;
+curr = next;
+}
+return prev;
+}
+
+
+
+
+
+I accessed sensors using Linux I²C/SPI framework via /dev/i2c-* and /dev/spidev*, and also wrote small test applications using ioctl calls
+
+I worked on an ARM-based SoC with integrated I²C and SPI controllers. I²C was used for low-speed sensors at 100–400 kHz, while SPI was used for high-speed sensors up to several MHz. Controller availability was verified through device tree, kernel configuration, and device nodes under /dev
+
+
+A device is always opened using the open() system call, which returns an integer file descriptor. ioctl does not open a device; it operates on an existing file descriptor to perform control operations. The file descriptor type remains the same regardless of whether we use read, write, or ioctl.
+
+
+What happens INSIDE module_init()?
+---------------------------------------
+Kernel flow:
+-------------------
+Module loaded
+module_init() executed
+Driver registers with kernel
+Kernel tries to match existing devices
+If match found → probe() called
+“module_init registers the driver with the kernel.”
+
+module_init registers the driver with the kernel, while probe() is invoked when the kernel matches the driver with a specific device instance.
+
+What happens INSIDE probe()?
+------------------------------------------
+Allocate driver data
+Get hardware resources
+Initialize hardware
+Register interfaces
+Probe initializes the hardware and makes the device usable.
+
+Sensor init
+Power enable
+IRQ request
+sysfs creation
+All are device-specific
+
+Inside the sensor:
+-----------------------------
+There is an internal ADC
+There is sampling logic
+There is a status register
+There is an interrupt logic block
+
+probe is called only when the driver successfully matches a device via device tree or ID tables. If probe is not invoked, common reasons include compatible string mismatch, device tree status disabled, bus controller not enabled, deferred probe, or driver not properly registered in module_init. To analyze, I check dmesg logs, verify device tree, confirm driver registration, and enable debug prints. module_init registers the driver, while probe allocates resources, initializes hardware, and registers interfaces.
+
+During sensor bring-up, I handled initialization by configuring registers and verifying chip ID, implemented calibration to correct raw data, optimized I2C transactions using burst reads instead of multiple byte reads, and debugged issues like NACK, probe failure, and suspend/resume problems using i2c-tools and kernel logs.
+
+Linux uses my driver by first registering it with the kernel, then matching it to a device via device tree. Once matched, the kernel calls probe, where the driver initializes the hardware. User space interacts through sysfs, character devices, or ioctl, and the driver communicates with the device through the bus subsystem like I2C or SPI.
+
+// INSIDE PROBE SAMPLE CODE
+-------------------------------------------------------------------
+static int sensor_probe(struct i2c_client *client,
+                        const struct i2c_device_id *id)
+{
+    struct sensor_data *data;
+
+    data = devm_kzalloc(&client->dev, sizeof(*data), GFP_KERNEL);
+
+    // 1. Verify chip ID
+    i2c_smbus_read_byte_data(client, WHO_AM_I_REG);
+
+    // 2. Reset sensor
+    i2c_smbus_write_byte_data(client, RESET_REG, 0x01);
+    msleep(10);
+
+    // 3. Configure sensor
+    i2c_smbus_write_byte_data(client, CTRL_REG1, 0x57);
+    i2c_smbus_write_byte_data(client, CTRL_REG2, 0x20);
+
+    // 4. Calibration
+    sensor_calibration(client);
+
+    return 0;
+}
+
+
+Single I2C transaction--Faster--Less power usage
+i2c_smbus_read_i2c_block_data(client, DATA_REG, 6, buf);
+
+
+// CALIBRATION CODE
+-------------------------------------------------------------
+static int sensor_calibration(struct i2c_client *client)
+{
+    int offset;
+
+    offset = i2c_smbus_read_word_data(client, OFFSET_REG);
+    sensor_offset = offset;
+
+    return 0;
+}
+
+
+Driver memory is allocated in kernel space using kmalloc, kzalloc, or vmalloc depending on size and usage. GFP_KERNEL is used in normal process context, GFP_ATOMIC in interrupt context, and GFP_DMA for DMA-capable memory. Kernel and user memory are isolated, and data transfer is done using copy_to_user and copy_from_user. Drivers can notify user space using blocking reads, poll/select, signals, or netlink.
+
+
+
+Probe will not be invoked if the device and driver do not match.
+-----------------------------------------------------------------
+Main reasons:
+
+1️⃣ Compatible string mismatch
+Device Tree "compatible" does not match driver’s of_match_table.
+
+2️⃣ Driver not loaded / not enabled
+Kernel config disabled or module not inserted.
+
+3️⃣ Bus not registered properly
+I2C/SPI controller driver not loaded.
+
+4️⃣ Device not detected on bus
+Wrong I2C address / hardware issue.
+
+5️⃣ Deferred probe
+If dependency (like regulator/clock/GPIO) not ready, probe may be delayed.
+
+
+
+
+
+
+
+How does device know data is ready?
+✔ Sensor internal ADC + status logic
+✔ Sensor triggers IRQ pin
+
+Q: Who calls probe?
+✔ Kernel bus framework (I2C/SPI/PCI)
+
+Q: What does module_init do?
+✔ Registers driver, not device
+
+Q: Is device ready when probe runs?
+✔ Yes — device exists and matched
+
+
+
+
+
+--------------------------------------------------------------------------------------
+
+void copy(char *dst){
+char arr[]= "hellokernel";
+strcpy(dst, arr);
+}
+
+
+char *buffer (){
+char buf[32];
+strcpy(buf, "hello");
+return buf;
+}
+
+-------------------------------------------------------------------------------------
+int counter = 0;
+void isr(void)
+{
+    counter++;
+}
+int main(void)
+{
+    while (counter < 10);
+    return 0;
+}
+ 
+spin_lock_irqsave(&lock)
+ counter++;
+spin_unlock_irqrestore(&lock);
+return IRQ_HANDLER;
+
+-----------------------------------------------------------------------------------
+
+struct Kishore {
+    char x;
+    int y;
+    double z;
+};
+
+struct Kishore kis;
+
+printf("%d ", sizeof(kis));
+    // 16
+
+
+----------------------------------------------------------------------------------
+// REMOVE DUPLICATE AND SORT
+#include <stdio.h>
+
+int main() {
+    int arr[] = {7, 7, 2, 5, 2, 1, 3, 4, 6};
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    int res[n];   // result array
+    int res_size = 0;
+
+    for (int i = 0; i < n; i++) {
+        int found = 0;
+
+        for (int j = 0; j < res_size; j++) {
+            if (arr[i] == res[j]) {
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            res[res_size++] = arr[i];
+        }
+    }
+
+
+	// Sort digits (Bubble Sort)
+    for (int i = 0; i < res_size - 1; i++) {
+        for (int j = 0; j < res_size - i - 1; j++) {
+            if (res[j] > res[j + 1]) {
+                int temp = res[j];
+                res[j] = res[j + 1];
+                res[j + 1] = temp;
+            }
+        }
+    }
+
+
+    // Print result
+    for (int i = 0; i < res_size; i++) {
+        printf("%d ", res[i]);
+    }
+
+    return 0;
+}
+
+---------------------------------------------------------------------------------
+// Simple Stack Implementation using Array (C)
+
+#include <stdio.h>
+#define SIZE 5
+
+int stack[SIZE];
+int top = -1;
+
+// Push operation
+void push(int value) {
+    if (top == SIZE - 1) {
+        printf("Stack Overflow\n");
+        return;
+    }
+    stack[++top] = value;
+}
+
+// Pop operation
+int pop() {
+    if (top == -1) {
+        printf("Stack Underflow\n");
+        return -1;
+    }
+    return stack[top--];
+}
+
+// Peek operation
+int peek() {
+    if (top == -1) {
+        printf("Stack is empty\n");
+        return -1;
+    }
+    return stack[top];
+}
+
+int main() {
+    push(10);
+    push(20);
+    push(30);
+
+    printf("Top: %d\n", peek());
+    printf("Popped: %d\n", pop());
+    printf("Top: %d\n", peek());
+
+    return 0;
+}
+
+----------------------------------------------------------------------------------
+// REVERSE A STRING USING RECURSION
+------------------------------------
+#include <stdio.h>
+
+void reverse(const char *str) {
+    if (*str == '\0')   // base case
+        return;
+
+    reverse(str + 1);  // recursive call
+    putchar(*str);     // print while returning
+}
+
+int main() {
+    reverse("abcdef");
+
+    char str[] = "abcdef";
+    reverse_string(str);
+
+    printf("%s\n", str);
+    return 0;
+}
+
+WITHOUT RECURSION
+-------------------------------
+void reverse_string(char *str) {
+    int i = 0;
+    int j = strlen(str) - 1;
+
+    while (i < j) {
+        char temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
+    }
+}
+---------------------------------------------------------------------------------
+
+perf
+top
+
+Bit manuplation
+-----------------------------------------
+set = n | (1 << pos)
+clear = n & ~(1 << pos)
+toggle = n ^ (1 << pos)
+
+-----------------------------------------------------------------------------------
+
+
+
+
+
+Interview - Questions for reference
+---------------------------------------------
+
+booting sequence
+probe function
+memory layout
+storage classes scope lifetime
+macro and inline
+volatile
+syncrinization mech
+mutex and spinlock
+structure padding
+
+
+MMU vitual memory how allocated in linux where and pupose also
+How u done boot time optimization
+how can we create a patch in yocto and append in .bb files
+
+which processor and frequency for either i2c or spi controllers
+how to check controllers are available or not
+
+IOCtl interation & c app open 
+what type FD
+
+probe why its not invoke what might be the reason even dts and all fine
+and how to analyze and fix
+
+module_inti inside what happening
+probe inside what happening
+
+i dev I2c driver for sensor-temperature , how to debug getting correct value or not
+same for spi driver also 
+like how whether the values from this spi controller is getting correct or not 
+
+i told i worked on xilinx platforms like zync, zyncmp, versel 
+so they were asked which processor and speed and frequency 
+
+how DMA is reflected to your driver
+
+how YOCTO
+
+
+by using arr implement a stack
+queues and dequeues
+
+already i2c sensor protocol is there what u implement new.?
+how memory allocate for driver and how to free it
+container apis
+how driver interact with kernel apis
+diff of cortex A and M
+how Linux is using your driver
+how the interaction is happening between driver and device
+cat /proc/slabinfo
+
+swap the 6th and the 9th bit in an integer
+container apis
+
+driver concurrence issues
+user and kernel space diff
+mmio and iio
+pit falls in device driver , how to optimize
+
+
+
+int **p;
+int rows =2, col=3;
+
+p = malloc(rows * sizeof(int *));
+
+for (int i =0; i < rows; i++){
+p[i] = malloc(cols * sizeof(int));
+
+
+
+sem_t odd, even;
+
+pthread_t_odd(){
+for(int i =1; i<=3; i++){
+sem_wait(&odd);
+printf("%d", i);
+sem_post(&even);
+
+}
+
+
+}
+
+pthread_even(){
+for(int i =2; i<=4; i++){
+sem_wait(&even);
+printf("%d", i);
+sem_post(&odd);
+}
+
+}
+
+
+int main(){
+
+sem_init(&odd, 0, 1);
+sem_inti(&even, 0, 0);
+
+
+
+
+
+--------------------------------------------------------------------------------------------
+
+Q1] Remove Nth Node from the end of a given linked list
+ 
+ 
+struct Node* removeNthFromEnd(struct ListNode* head, int N)
+{
+	
+	Struct Node dummy;
+	dummy.next = head;
+	
+	Struct Node *fast = &dummy;
+	Struct Node *slow = &dummy;
+	
+	for(int i=0; i<=N; i++){
+	if(fast == NULL) return head;
+	fast = fast->next;
+}
+
+while(fast != NULL){
+Fast = fast->next;
+Slow = slow->next;
+}
+Node *del = slow->next;
+slow->next = del->next;
+Return dummy.next;
+}
+
+------------------------------------------------------------------------------------------------
+
+
+Q2] Given two rectangles, find if the given two rectangles overlap or not.
+Note that a rectangle can be represented by two coordinates, top left and bottom right. So mainly we are given following four coordinates.
+l1: Top Left coordinate of first rectangle.
+r1: Bottom Right coordinate of first rectangle.
+l2: Top Left coordinate of second rectangle.
+r2: Bottom Right coordinate of second rectangle.
+
+ ------------------
+
+	--------------------
+ ------------------
+
+	--------------------
+
+
+struct Point {
+        int x, y;
+};
+ 
+bool doOverlap(Point l1, Point r1, Point l2, Point r2)
+{
+ if(L1.x  > r2.x || l2.x > r1.x ) return false;
+if(r1.y> l2.y || r2.y>l1.y) return false;
+return true;
+}
+
+
+---------------------------------------------------------------------------------------------
+
+
+
+
+
+// Online C compiler to run C program online
+#include <stdio.h>
+
+int main() {
+    
+    int x = 63192;
+    int y = 2;
+    // Write C code here
+    printf("Try programiz.pro");
+// 623192
+// 632192
+// 63192
+
+
+    int temp = x;
+    int rev = 0;
+    while(temp > 0){
+        rev = rev * 10 + temp % 10;
+        temp = temp / 10;
+        
+    }
+    
+    int insert = 0;
+    int res =0;
+    while (rev > 0){
+        int val = rev % 10;
+        
+        if (!insert && val < y){
+            res = res * 10 + y;
+            insert = 1;
+        }
+        
+        res = res * 10 + val;
+        rev = rev / 10;
+    }
+    
+    if(!insert){
+        res = res * 10 + y;
+    }
+    printf("%d\n", res);    
+    
+    
+    return 0;
+}
