@@ -1,0 +1,35 @@
+From 4917753737f195b6cede43edbf0fa43e1f22014b Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Fri, 15 Apr 2022 21:44:41 +0530
+Subject: [PATCH 1/2] Mux Config in DTS: LCD_DATA_13.GPIO0_9,
+ LCD_DATA14.GPIO0_10 & LCD_DATA_15.GPIO0_11
+
+---
+ arch/arm/boot/dts/km-bbb-am335x.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/km-bbb-am335x.dts b/arch/arm/boot/dts/km-bbb-am335x.dts
+index f760193df..7ebe756fe 100644
+--- a/arch/arm/boot/dts/km-bbb-am335x.dts
++++ b/arch/arm/boot/dts/km-bbb-am335x.dts
+@@ -38,6 +38,9 @@
+                 pinctrl-single,pins = <
+                         AM33XX_IOPAD(0x970, PIN_INPUT_PULLUP | MUX_MODE0)       /* uart0_rxd.uart0_rxd */
+                         AM33XX_IOPAD(0x974, PIN_OUTPUT_PULLDOWN | MUX_MODE0)    /* uart0_txd.uart0_txd */
++                        AM33XX_IOPAD(0x8D4, MUX_MODE7)  				     /* lcd_data13.gpio0_9 (Buzzer) */
++                        AM33XX_IOPAD(0x8D8, MUX_MODE7)					     /* lcd_data14.gpio0_10(RED LED)*/
++                        AM33XX_IOPAD(0x8DC, PIN_INPUT | PIN_INPUT_PULLDOWN | MUX_MODE7)      /* lcd_data15.gpio0_11(ENT_SW) */
+                 >;
+         };
+ 
+@@ -68,6 +71,7 @@
+         };
+ };
+ 
++
+ &uart0 {
+         pinctrl-names = "default";
+         pinctrl-0 = <&uart0_pins>;
+-- 
+2.17.1
+

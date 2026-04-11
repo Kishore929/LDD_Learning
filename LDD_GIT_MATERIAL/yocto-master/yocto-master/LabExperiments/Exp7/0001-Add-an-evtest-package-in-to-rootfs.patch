@@ -1,0 +1,28 @@
+From 2a7fd30f3727144af6c257a23bd8cd4fa8d84b09 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Tue, 4 Jan 2022 18:10:19 +0530
+Subject: [PATCH] =?UTF-8?q?Add=20an=20=E2=80=9Cevtest=E2=80=9D=20package?=
+ =?UTF-8?q?=20in=20to=20rootfs?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ meta-bbb/images/console-image.bb | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/meta-bbb/images/console-image.bb b/meta-bbb/images/console-image.bb
+index 9714bdd..e441b9b 100644
+--- a/meta-bbb/images/console-image.bb
++++ b/meta-bbb/images/console-image.bb
+@@ -24,6 +24,7 @@ IMAGE_INSTALL += " \
+     ${WIFI} \
+     ${SECURITY_TOOLS} \
+     ${WIREGUARD} \
++    evtest \
+ "
+ 
+ export IMAGE_BASENAME = "console-image"
+-- 
+2.17.1
+

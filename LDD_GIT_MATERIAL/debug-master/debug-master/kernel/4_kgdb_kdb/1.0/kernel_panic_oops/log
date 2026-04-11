@@ -1,0 +1,139 @@
+minicom:
+SysRq : DEBUG                                                 
+<6>[  704.472067] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 12s
+<6>[ 1310.640889] SysRq : DEBUG                                                 
+<6>[ 1310.644304] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 23s
+<4>[ 1343.023474] device opened                                                 
+<1>[ 1343.023508] BUG: unable to handle kernel NULL pointer dereference at     )
+<1>[ 1343.023518] IP: [<ffffffffa028607b>] my_open+0x2b/0x50 [char]             
+<4>[ 1343.023531] PGD 1a64e067 PUD 18127067 PMD 0                               
+<4>[ 1343.023539] Oops: 0000 [#1] SMP  
+
+------------------------------------------------------
+KGDB_KDB window......
+
+root@baig-mirza:/home/baig/shadab# gdb vmlinux 
+GNU gdb (Ubuntu 7.7-0ubuntu3.1) 7.7
+Copyright (C) 2014 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from vmlinux...done.
+(gdb) target remote /dev/pts/14
+Remote debugging using /dev/pts/14
+kgdb_breakpoint () at kernel/debug/debug_core.c:1022
+1022	kernel/debug/debug_core.c: No such file or directory.
+(gdb) c\
+c
+Undefined command: "cc".  Try "help".
+(gdb) c
+Continuing.
+[New Thread 2196]
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+[Switching to Thread 2196]
+kgdb_breakpoint () at kernel/debug/debug_core.c:1022
+1022	in kernel/debug/debug_core.c
+(gdb) i b
+No breakpoints or watchpoints.
+(gdb) add-
+add-auto-load-safe-path      add-symbol-file
+add-inferior                 add-symbol-file-from-memory
+(gdb) add-symbol-file char.ko 
+The address where char.ko has been loaded is missing
+(gdb) c
+Continuing.
+    
+Program received signal SIGTRAP, Trace/breakpoint trap.
+kgdb_breakpoint () at kernel/debug/debug_core.c:1022
+1022	in kernel/debug/debug_core.c
+(gdb) add-symbol-file char.ko 0xffffffffa0286000 -s .data 0xffffffffa0288000 -s .bss 0xffffffffa0288368 -s
+add symbol table from file "char.ko" at
+	.text_addr = 0xffffffffa0286000
+	.data_addr = 0xffffffffa0288000
+	.bss_addr = 0xffffffffa0288368
+(y or n) y
+Reading symbols from char.ko...done.
+(gdb) p gl
+$1 = 100
+(gdb) p gl_bss
+$2 = 0
+(gdb) p ptr
+$3 = (int *) 0x0 <irq_stack_union>
+(gdb) p *ptr
+Cannot access memory at address 0x0
+(gdb) b my_open
+Breakpoint 1 at 0xffffffffa0286050: file /home/arshad/LDD_CDD_02/char.c, line 55.
+(gdb) b my_close
+Breakpoint 2 at 0xffffffffa02860a0: file /home/arshad/LDD_CDD_02/char.c, line 63.
+(gdb) i b
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0xffffffffa0286050 in my_open 
+                                                   at /home/arshad/LDD_CDD_02/char.c:55
+2       breakpoint     keep y   0xffffffffa02860a0 in my_close 
+                                                   at /home/arshad/LDD_CDD_02/char.c:63
+(gdb) c
+Continuing.
+Warning:
+Cannot insert breakpoint 1.
+Cannot access memory at address 0xffffffffa0286050
+Cannot insert breakpoint 2.
+Cannot access memory at address 0xffffffffa02860a0
+
+(gdb) delete
+Delete all breakpoints? (y or n) y
+(gdb) c
+Continuing.
+[New Thread 3525]
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 3525]
+0xffffffffa028607b in my_open (ino=<optimized out>, filp=<optimized out>)
+    at /home/arshad/LDD_CDD_02/char.c:57
+57	/home/arshad/LDD_CDD_02/char.c: No such file or directory.
+(gdb) 
+[1]+  Stopped                 gdb vmlinux
+
+--------------------------------------------
+after getting exact address of panic
+
+(gdb) add-symbol-file char.ko 0xffffffffa0286000 -s .data 0xffffffffa0288000 -s .bss 0xffffffffa0288368 -s
+add symbol table from file "char.ko" at
+	.text_addr = 0xffffffffa0286000
+	.data_addr = 0xffffffffa0288000
+	.bss_addr = 0xffffffffa0288368
+(y or n) y
+
+Reading symbols from char.ko...done.
+(gdb) disass my_open
+Dump of assembler code for function my_open:
+   0xffffffffa02860cb <+0>:	and    %al,-0x38b75fd8(%rax)
+   0xffffffffa02860d1 <+6>:	rcrl   $0x28,0x70(%rbp)
+   0xffffffffa02860d5 <+10>:	movabs 0x3cbf00000100ba,%al
+   0xffffffffa02860de <+19>:	add    %al,(%rax)
+   0xffffffffa02860e0 <+21>:	mov    %rsp,%rbp
+   0xffffffffa02860e3 <+24>:	callq  0xffffffff811bb340 <__register_chrdev>
+   0xffffffffa02860e8 <+29>:	test   %eax,%eax
+   0xffffffffa02860ea <+31>:	js     0xffffffffa0286108 <my_open+61>
+   0xffffffffa02860ec <+33>:	mov    $0x3c,%esi
+   0xffffffffa02860f1 <+38>:	mov    $0xffffffffa02870c8,%rdi
+   0xffffffffa02860f8 <+45>:	xor    %eax,%eax
+   0xffffffffa02860fa <+47>:	callq  0xffffffff816f0c02 <printk>
+   0xffffffffa02860ff <+52>:	xor    %eax,%eax
+   0xffffffffa0286101 <+54>:	pop    %rbp
+   0xffffffffa0286102 <+55>:	retq   
+   0xffffffffa0286103 <+56>:	nopl   0x0(%rax,%rax,1)
+   0xffffffffa0286108 <+61>:	mov    $0xffffffffa02870a8,%rdi
+End of assembler dump.
+(gdb) l *(0xffffffffa02860f6)
+0xffffffffa02860f6 is in my_open (/home/arshad/LDD_CDD_02/char.c:57).
+

@@ -1,0 +1,244 @@
+From d76dfbcb4980a96d35c8e3441814b8496b14ef6c Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Thu, 30 Dec 2021 22:23:04 +0530
+Subject: [PATCH] To add beagleboneblack-kernel repo in to yocto project
+
+---
+ meta-bbb/conf/local.conf.sample               |  2 +-
+ ...1-spidev-Add-a-generic-compatible-id.patch | 24 ------
+ ...-dts-Remove-bbb-cape-i2c-definitions.patch | 86 -------------------
+ ...O-FW-RX-BA-session-warnings-to-debug.patch | 25 ------
+ .../linux-stable-4.19/beaglebone/defconfig    |  3 +-
+ .../recipes-kernel/linux/linux-stable_4.19.bb | 20 ++---
+ 6 files changed, 8 insertions(+), 152 deletions(-)
+ delete mode 100644 meta-bbb/recipes-kernel/linux/linux-stable-4.19/0001-spidev-Add-a-generic-compatible-id.patch
+ delete mode 100644 meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-dts-Remove-bbb-cape-i2c-definitions.patch
+ delete mode 100644 meta-bbb/recipes-kernel/linux/linux-stable-4.19/0003-wlcore-Change-NO-FW-RX-BA-session-warnings-to-debug.patch
+
+diff --git a/meta-bbb/conf/local.conf.sample b/meta-bbb/conf/local.conf.sample
+index cca366b..9c9ffec 100644
+--- a/meta-bbb/conf/local.conf.sample
++++ b/meta-bbb/conf/local.conf.sample
+@@ -20,7 +20,7 @@ PREFERRED_PROVIDER_udev = "eudev"
+ VIRTUAL-RUNTIME_init_manager = "sysvinit"
+ 
+ # Default kernel is 5.6, but you can change here
+-# PREFERRED_VERSION_linux-stable = "5.4.%"
++PREFERRED_VERSION_linux-stable = "4.19.94"
+ 
+ # uncomment for kernels < 5.6
+ # WIREGUARD_COMPAT = "1"
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0001-spidev-Add-a-generic-compatible-id.patch b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0001-spidev-Add-a-generic-compatible-id.patch
+deleted file mode 100644
+index ca05d0b..0000000
+--- a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0001-spidev-Add-a-generic-compatible-id.patch
++++ /dev/null
+@@ -1,24 +0,0 @@
+-From 40d0ec5ae0cfb6a91bfbe5164e63d37c8a84fb6a Mon Sep 17 00:00:00 2001
+-From: Scott Ellis <scott@jumpnowtek.com>
+-Date: Mon, 22 Oct 2018 15:35:37 -0400
+-Subject: [PATCH 1/3] spidev: Add a generic compatible id
+-
+----
+- drivers/spi/spidev.c | 1 +
+- 1 file changed, 1 insertion(+)
+-
+-diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+-index cda1071..ab428a6 100644
+---- a/drivers/spi/spidev.c
+-+++ b/drivers/spi/spidev.c
+-@@ -665,6 +665,7 @@ static struct class *spidev_class;
+- 
+- #ifdef CONFIG_OF
+- static const struct of_device_id spidev_dt_ids[] = {
+-+	{ .compatible = "spidev" },
+- 	{ .compatible = "rohm,dh2228fv" },
+- 	{ .compatible = "lineartechnology,ltc2488" },
+- 	{ .compatible = "ge,achc" },
+--- 
+-2.7.4
+-
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-dts-Remove-bbb-cape-i2c-definitions.patch b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-dts-Remove-bbb-cape-i2c-definitions.patch
+deleted file mode 100644
+index 3adbfc0..0000000
+--- a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-dts-Remove-bbb-cape-i2c-definitions.patch
++++ /dev/null
+@@ -1,86 +0,0 @@
+-From da9e17f77c94b4f63415a300d244fc0d0cd4a163 Mon Sep 17 00:00:00 2001
+-From: Scott Ellis <scott@jumpnowtek.com>
+-Date: Mon, 22 Oct 2018 15:37:06 -0400
+-Subject: [PATCH 2/3] dts: Remove bbb cape i2c definitions
+-
+----
+- arch/arm/boot/dts/am335x-bone-common.dtsi | 56 -------------------------------
+- 1 file changed, 56 deletions(-)
+-
+-diff --git a/arch/arm/boot/dts/am335x-bone-common.dtsi b/arch/arm/boot/dts/am335x-bone-common.dtsi
+-index 73b514d..8b0a6c6 100644
+---- a/arch/arm/boot/dts/am335x-bone-common.dtsi
+-+++ b/arch/arm/boot/dts/am335x-bone-common.dtsi
+-@@ -85,13 +85,6 @@
+- 		>;
+- 	};
+- 
+--	i2c2_pins: pinmux_i2c2_pins {
+--		pinctrl-single,pins = <
+--			AM33XX_IOPAD(0x978, PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
+--			AM33XX_IOPAD(0x97c, PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
+--		>;
+--	};
+--
+- 	uart0_pins: pinmux_uart0_pins {
+- 		pinctrl-single,pins = <
+- 			AM33XX_IOPAD(0x970, PIN_INPUT_PULLUP | MUX_MODE0)	/* uart0_rxd.uart0_rxd */
+-@@ -249,55 +242,6 @@
+- 	};
+- };
+- 
+--&i2c2 {
+--	pinctrl-names = "default";
+--	pinctrl-0 = <&i2c2_pins>;
+--
+--	status = "okay";
+--	clock-frequency = <100000>;
+--
+--	cape_eeprom0: cape_eeprom0@54 {
+--		compatible = "atmel,24c256";
+--		reg = <0x54>;
+--		#address-cells = <1>;
+--		#size-cells = <1>;
+--		cape0_data: cape_data@0 {
+--			reg = <0 0x100>;
+--		};
+--	};
+--
+--	cape_eeprom1: cape_eeprom1@55 {
+--		compatible = "atmel,24c256";
+--		reg = <0x55>;
+--		#address-cells = <1>;
+--		#size-cells = <1>;
+--		cape1_data: cape_data@0 {
+--			reg = <0 0x100>;
+--		};
+--	};
+--
+--	cape_eeprom2: cape_eeprom2@56 {
+--		compatible = "atmel,24c256";
+--		reg = <0x56>;
+--		#address-cells = <1>;
+--		#size-cells = <1>;
+--		cape2_data: cape_data@0 {
+--			reg = <0 0x100>;
+--		};
+--	};
+--
+--	cape_eeprom3: cape_eeprom3@57 {
+--		compatible = "atmel,24c256";
+--		reg = <0x57>;
+--		#address-cells = <1>;
+--		#size-cells = <1>;
+--		cape3_data: cape_data@0 {
+--			reg = <0 0x100>;
+--		};
+--	};
+--};
+--
+--
+- /include/ "tps65217.dtsi"
+- 
+- &tps {
+--- 
+-2.7.4
+-
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0003-wlcore-Change-NO-FW-RX-BA-session-warnings-to-debug.patch b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0003-wlcore-Change-NO-FW-RX-BA-session-warnings-to-debug.patch
+deleted file mode 100644
+index e2219fb..0000000
+--- a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0003-wlcore-Change-NO-FW-RX-BA-session-warnings-to-debug.patch
++++ /dev/null
+@@ -1,25 +0,0 @@
+-From 632e5ae870e74efc0eae59e7dbf6131636635856 Mon Sep 17 00:00:00 2001
+-From: Scott Ellis <scott@jumpnowtek.com>
+-Date: Mon, 22 Oct 2018 15:38:38 -0400
+-Subject: [PATCH 3/3] wlcore: Change NO FW RX BA session warnings to debug
+-
+----
+- drivers/net/wireless/ti/wlcore/acx.c | 2 +-
+- 1 file changed, 1 insertion(+), 1 deletion(-)
+-
+-diff --git a/drivers/net/wireless/ti/wlcore/acx.c b/drivers/net/wireless/ti/wlcore/acx.c
+-index 7c83915..0778bfd 100644
+---- a/drivers/net/wireless/ti/wlcore/acx.c
+-+++ b/drivers/net/wireless/ti/wlcore/acx.c
+-@@ -1448,7 +1448,7 @@ int wl12xx_acx_set_ba_receiver_session(struct wl1271 *wl, u8 tid_index,
+- 
+- 	/* sometimes we can't start the session */
+- 	if (ret == CMD_STATUS_NO_RX_BA_SESSION) {
+--		wl1271_warning("no fw rx ba on tid %d", tid_index);
+-+		wl1271_debug(DEBUG_ACX, "no fw rx ba on tid %d", tid_index);
+- 		ret = -EBUSY;
+- 		goto out;
+- 	}
+--- 
+-2.7.4
+-
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/beaglebone/defconfig b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/beaglebone/defconfig
+index 1b894b6..e7eb0e3 100644
+--- a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/beaglebone/defconfig
++++ b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/beaglebone/defconfig
+@@ -19,7 +19,7 @@ CONFIG_BUILDTIME_EXTABLE_SORT=y
+ CONFIG_BROKEN_ON_SMP=y
+ CONFIG_INIT_ENV_ARG_LIMIT=32
+ # CONFIG_COMPILE_TEST is not set
+-CONFIG_LOCALVERSION="-jumpnow"
++CONFIG_LOCALVERSION="-kernelmasters"
+ # CONFIG_LOCALVERSION_AUTO is not set
+ CONFIG_BUILD_SALT=""
+ CONFIG_HAVE_KERNEL_GZIP=y
+@@ -292,6 +292,7 @@ CONFIG_CPU_THUMB_CAPABLE=y
+ CONFIG_CPU_32v6K=y
+ CONFIG_CPU_32v7=y
+ CONFIG_CPU_ABRT_EV7=y
++
+ CONFIG_CPU_PABRT_V7=y
+ CONFIG_CPU_CACHE_V7=y
+ CONFIG_CPU_CACHE_VIPT=y
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb b/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb
+index aa09a6d..46a7dcf 100644
+--- a/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb
++++ b/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb
+@@ -2,27 +2,17 @@ require linux-stable.inc
+ 
+ COMPATIBLE_MACHINE = "beaglebone"
+ 
+-KERNEL_DEVICETREE ?= " \
+-    am335x-boneblack.dtb \
+-    am335x-boneblack-wireless.dtb \
+-    am335x-boneblue.dtb \
+-    am335x-bonegreen.dtb \
+-    am335x-bonegreen-wireless.dtb \
+-"
+-
++KERNEL_DEVICETREE ?= "km-bbb-am335x.dtb"
+ LINUX_VERSION = "4.19"
+-LINUX_VERSION_EXTENSION = "-jumpnow"
++LINUX_VERSION_EXTENSION = "-kernelmasters"
+ 
+ FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stable-${LINUX_VERSION}:"
+ 
+ S = "${WORKDIR}/git"
+ 
+-PV = "4.19.129"
+-SRCREV = "b3a99fd385fab59d0b8b4fdfb449c1e979accab8"
++PV = "4.19.94"
++SRCREV = "58ac7b864e15789f208b285202bbc31c91edd259"
+ SRC_URI = " \
+-    git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git;branch=linux-${LINUX_VERSION}.y \
++    git://github.com/kernelmasters/beagleboneblack-kernel.git \
+     file://defconfig \
+-    file://0001-spidev-Add-a-generic-compatible-id.patch \
+-    file://0002-dts-Remove-bbb-cape-i2c-definitions.patch \
+-    file://0003-wlcore-Change-NO-FW-RX-BA-session-warnings-to-debug.patch \
+ "
+-- 
+2.17.1
+

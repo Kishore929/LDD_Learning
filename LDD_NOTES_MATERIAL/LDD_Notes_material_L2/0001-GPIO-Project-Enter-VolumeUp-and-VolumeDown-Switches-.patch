@@ -1,0 +1,109 @@
+From 6df44d0ce060593535a49c9ad25d38355de8eb69 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar <kishore@kernelmasters.com>
+Date: Fri, 24 Nov 2023 21:49:24 +0530
+Subject: [PATCH] GPIO Project: Enter,VolumeUp and VolumeDown Switches Porting
+ on KM-BBB
+
+---
+ Makefile                            |  2 +-
+ arch/arm/boot/dts/km-bbb-am335x.dts | 29 +++++++++++++++++++++++++++++
+ drivers/gpio/gpio-omap.c            |  2 ++
+ drivers/input/keyboard/gpio_keys.c  |  2 ++
+ 4 files changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 10b78143b..9cc37b9ab 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@
+ VERSION = 4
+ PATCHLEVEL = 19
+ SUBLEVEL = 94
+-EXTRAVERSION = kernel-learning
++EXTRAVERSION = enter-sw
+ NAME = "People's Front"
+ 
+ # *DOCUMENTATION*
+diff --git a/arch/arm/boot/dts/km-bbb-am335x.dts b/arch/arm/boot/dts/km-bbb-am335x.dts
+index cfbddead0..c5e26a2bb 100644
+--- a/arch/arm/boot/dts/km-bbb-am335x.dts
++++ b/arch/arm/boot/dts/km-bbb-am335x.dts
+@@ -40,6 +40,35 @@
+ 		regulator-max-microvolt = <3300000>;
+ 	};
+ 
++        gpio_keys: km-bbb-keys {
++                compatible = "gpio-keys";
++                pinctrl-names = "default";
++                /*pinctrl-0 = <&gpiokey_pins>;*/
++                autorepeat;
++
++	        switch11 {
++                        label = "Enter";
++                        linux,code = <143>;
++                        /*linux,code = <KEY_WAKEUP>;*/
++                        gpios = <&gpio0 11 GPIO_ACTIVE_LOW>;
++                        wakeup-source;
++                };
++	        switch26 {
++                        label = "VolumeUP";
++                        linux,code = <115>;
++                        /*linux,code = <KEY_WAKEUP>;*/
++                        gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
++                        wakeup-source;
++                };
++	        switch27 {
++                        label = "VolumeDown";
++                        linux,code = <114>;
++                        /*linux,code = <KEY_WAKEUP>;*/
++                        gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;
++                        wakeup-source;
++                };
++
++	};
+ };
+ 
+ &cpu0_opp_table {
+diff --git a/drivers/gpio/gpio-omap.c b/drivers/gpio/gpio-omap.c
+index 2a4a11634..04851a094 100644
+--- a/drivers/gpio/gpio-omap.c
++++ b/drivers/gpio/gpio-omap.c
+@@ -1243,6 +1243,7 @@ static int omap_gpio_probe(struct platform_device *pdev)
+ 	struct irq_chip *irqc;
+ 	int ret;
+ 
++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+ 	match = of_match_device(of_match_ptr(omap_gpio_match), dev);
+ 
+ 	pdata = match ? match->data : dev_get_platdata(dev);
+@@ -1357,6 +1358,7 @@ static int omap_gpio_probe(struct platform_device *pdev)
+ 
+ 	list_add_tail(&bank->node, &omap_gpio_list);
+ 
++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
+index 492a971b9..8c3e316f3 100644
+--- a/drivers/input/keyboard/gpio_keys.c
++++ b/drivers/input/keyboard/gpio_keys.c
+@@ -778,6 +778,7 @@ static int gpio_keys_probe(struct platform_device *pdev)
+ 	int i, error;
+ 	int wakeup = 0;
+ 
++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+ 	if (!pdata) {
+ 		pdata = gpio_keys_get_devtree_pdata(dev);
+ 		if (IS_ERR(pdata))
+@@ -872,6 +873,7 @@ static int gpio_keys_probe(struct platform_device *pdev)
+ 
+ 	device_init_wakeup(dev, wakeup);
+ 
++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+ 	return 0;
+ }
+ 
+-- 
+2.17.1
+

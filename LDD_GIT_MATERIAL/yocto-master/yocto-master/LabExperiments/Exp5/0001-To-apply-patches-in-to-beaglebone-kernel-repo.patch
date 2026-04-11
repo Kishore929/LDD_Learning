@@ -1,0 +1,151 @@
+From 439a9fe18a72036dc58e21fce57e281f61f5a500 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Mon, 3 Jan 2022 17:19:59 +0530
+Subject: [PATCH] To apply patches in to beaglebone-kernel repo.
+
+---
+ ...S-LCD_DATA_13.GPIO0_9-LCD_DATA14.GPI.patch | 41 +++++++++++
+ ...O11-Raising-Edge-Interrupt-porting-o.patch | 71 +++++++++++++++++++
+ .../recipes-kernel/linux/linux-stable_4.19.bb |  2 +
+ 3 files changed, 114 insertions(+)
+ create mode 100644 meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-Mux-Config-in-DTS-LCD_DATA_13.GPIO0_9-LCD_DATA14.GPI.patch
+ create mode 100644 meta-bbb/recipes-kernel/linux/linux-stable-4.19/0005-Enter-Switch-GPIO11-Raising-Edge-Interrupt-porting-o.patch
+
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-Mux-Config-in-DTS-LCD_DATA_13.GPIO0_9-LCD_DATA14.GPI.patch b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-Mux-Config-in-DTS-LCD_DATA_13.GPIO0_9-LCD_DATA14.GPI.patch
+new file mode 100644
+index 0000000..ee14929
+--- /dev/null
++++ b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0002-Mux-Config-in-DTS-LCD_DATA_13.GPIO0_9-LCD_DATA14.GPI.patch
+@@ -0,0 +1,41 @@
++From 4f19e8a101f53c6d4af93cbe815df1163dae5136 Mon Sep 17 00:00:00 2001
++From: BodduKishoreKumar <kishore@kernelmasters.org>
++Date: Sat, 8 May 2021 09:58:21 +0530
++Subject: [PATCH 2/5] Mux Config in DTS: LCD_DATA_13.GPIO0_9,
++ LCD_DATA14.GPIO0_10, LCD_DATA_15.GPIO0_11
++
++---
++ arch/arm/boot/dts/km-bbb-am335x.dts | 10 +++++++++-
++ 1 file changed, 9 insertions(+), 1 deletion(-)
++
++diff --git a/arch/arm/boot/dts/km-bbb-am335x.dts b/arch/arm/boot/dts/km-bbb-am335x.dts
++index f760193df..ff5dfd4f3 100644
++--- a/arch/arm/boot/dts/km-bbb-am335x.dts
+++++ b/arch/arm/boot/dts/km-bbb-am335x.dts
++@@ -34,6 +34,13 @@
++ };
++ 
++ &am33xx_pinmux {
+++        gpio_pins: pinmux_gpio_pins {
+++		pinctrl-single,pins = <
+++                        AM33XX_IOPAD(0x8D4, MUX_MODE7)       /* lcd_data13.gpio0_9 - Buzzer */
+++                        AM33XX_IOPAD(0x8D8, MUX_MODE7)       /* lcd_data14.gpio0_10 - RED LED*/
+++                        AM33XX_IOPAD(0x8DC, PIN_INPUT_PULLDOWN | MUX_MODE7)    /* lcd_data15.gpio0_11 - Enter Switch*/
+++                >;
+++        };
++         uart0_pins: pinmux_uart0_pins {
++                 pinctrl-single,pins = <
++                         AM33XX_IOPAD(0x970, PIN_INPUT_PULLUP | MUX_MODE0)       /* uart0_rxd.uart0_rxd */
++@@ -70,7 +77,8 @@
++ 
++ &uart0 {
++         pinctrl-names = "default";
++-        pinctrl-0 = <&uart0_pins>;
+++        pinctrl-1 = <&uart0_pins>;
+++        pinctrl-0 = <&gpio_pins>;
++ 
++         status = "okay";
++ };
++-- 
++2.17.1
++
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0005-Enter-Switch-GPIO11-Raising-Edge-Interrupt-porting-o.patch b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0005-Enter-Switch-GPIO11-Raising-Edge-Interrupt-porting-o.patch
+new file mode 100644
+index 0000000..8def586
+--- /dev/null
++++ b/meta-bbb/recipes-kernel/linux/linux-stable-4.19/0005-Enter-Switch-GPIO11-Raising-Edge-Interrupt-porting-o.patch
+@@ -0,0 +1,71 @@
++From 7c14ec94be2e73fc5f04090139f3fb1fe7753c74 Mon Sep 17 00:00:00 2001
++From: BodduKishoreKumar <kishore@kernelmasters.org>
++Date: Fri, 14 May 2021 11:58:13 +0530
++Subject: [PATCH 5/5] Enter Switch (GPIO11: Raising Edge Interrupt) porting on
++ KM-BBB target board
++
++---
++ arch/arm/boot/dts/km-bbb-am335x.dts | 10 ++++++++++
++ drivers/input/keyboard/gpio_keys.c  | 11 +++++++++++
++ 2 files changed, 21 insertions(+)
++
++diff --git a/arch/arm/boot/dts/km-bbb-am335x.dts b/arch/arm/boot/dts/km-bbb-am335x.dts
++index ff5dfd4f3..4c75d54e2 100644
++--- a/arch/arm/boot/dts/km-bbb-am335x.dts
+++++ b/arch/arm/boot/dts/km-bbb-am335x.dts
++@@ -31,6 +31,16 @@
++                 regulator-max-microvolt = <3300000>;
++         };
++ 
+++        gpio-keys {
+++                       compatible = "gpio-keys";
+++                         autorepeat;
+++                         enter {
+++                                 label = "GPIO Key ENTER";
+++                                 linux,code = <28>;
+++                                 gpios = <&gpio0 11 0>;
+++                         };
+++         };
+++
++ };
++ 
++ &am33xx_pinmux {
++diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
++index 492a971b9..4776f62fe 100644
++--- a/drivers/input/keyboard/gpio_keys.c
+++++ b/drivers/input/keyboard/gpio_keys.c
++@@ -32,6 +32,8 @@
++ #include <linux/spinlock.h>
++ #include <dt-bindings/input/gpio-keys.h>
++ 
+++#define KM_DEBUG
+++
++ struct gpio_button_data {
++ 	const struct gpio_keys_button *button;
++ 	struct input_dev *input;
++@@ -778,6 +780,11 @@ static int gpio_keys_probe(struct platform_device *pdev)
++ 	int i, error;
++ 	int wakeup = 0;
++ 
+++
+++	#ifdef KM_DEBUG
+++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+++	#endif
+++
++ 	if (!pdata) {
++ 		pdata = gpio_keys_get_devtree_pdata(dev);
++ 		if (IS_ERR(pdata))
++@@ -872,6 +879,10 @@ static int gpio_keys_probe(struct platform_device *pdev)
++ 
++ 	device_init_wakeup(dev, wakeup);
++ 
+++	#ifdef KM_DEBUG
+++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+++	#endif
+++
++ 	return 0;
++ }
++ 
++-- 
++2.17.1
++
+diff --git a/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb b/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb
+index 46a7dcf..6b5469a 100644
+--- a/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb
++++ b/meta-bbb/recipes-kernel/linux/linux-stable_4.19.bb
+@@ -15,4 +15,6 @@ SRCREV = "58ac7b864e15789f208b285202bbc31c91edd259"
+ SRC_URI = " \
+     git://github.com/kernelmasters/beagleboneblack-kernel.git \
+     file://defconfig \
++    file://0002-Mux-Config-in-DTS-LCD_DATA_13.GPIO0_9-LCD_DATA14.GPI.patch \
++    file://0005-Enter-Switch-GPIO11-Raising-Edge-Interrupt-porting-o.patch \
+ "
+-- 
+2.17.1
+

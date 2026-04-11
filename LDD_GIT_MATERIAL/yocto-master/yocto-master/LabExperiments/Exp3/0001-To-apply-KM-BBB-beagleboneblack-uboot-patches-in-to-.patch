@@ -1,0 +1,65 @@
+From 263668f7063fc20cb3eab05c4bb5e6f4dd064425 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Wed, 29 Dec 2021 20:02:55 +0530
+Subject: [PATCH] =?UTF-8?q?To=20apply=20KM-BBB=20=E2=80=9Cbeagleboneblack-?=
+ =?UTF-8?q?uboot=E2=80=9D=20patches=20in=20to=20yocto=20project?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ ...01-Enable-GPIO9-Buz-10-LED-11-SW-Mux.patch | 29 +++++++++++++++++++
+ meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend |  2 +-
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+ create mode 100644 meta-bbb/recipes-bsp/u-boot/files/0001-Enable-GPIO9-Buz-10-LED-11-SW-Mux.patch
+
+diff --git a/meta-bbb/recipes-bsp/u-boot/files/0001-Enable-GPIO9-Buz-10-LED-11-SW-Mux.patch b/meta-bbb/recipes-bsp/u-boot/files/0001-Enable-GPIO9-Buz-10-LED-11-SW-Mux.patch
+new file mode 100644
+index 0000000..0d52303
+--- /dev/null
++++ b/meta-bbb/recipes-bsp/u-boot/files/0001-Enable-GPIO9-Buz-10-LED-11-SW-Mux.patch
+@@ -0,0 +1,29 @@
++From 46bb8ded541312bb9059ac8cd2bfd97b8e2416e4 Mon Sep 17 00:00:00 2001
++From: Kishore Kumar Boddu <kishore@kernelmasters.org>
++Date: Fri, 24 Dec 2021 21:50:42 +0530
++Subject: [PATCH]  Enable GPIO9(Buz),10(LED),11(SW) Mux
++
++---
++ board/ti/am335x/mux.c | 6 +++---
++ 1 file changed, 3 insertions(+), 3 deletions(-)
++
++diff --git a/board/ti/am335x/mux.c b/board/ti/am335x/mux.c
++index 1fa0bc8e..b275da44 100644
++--- a/board/ti/am335x/mux.c
+++++ b/board/ti/am335x/mux.c
++@@ -30,9 +30,9 @@ static struct module_pin_mux lcd_pin_mux[] = {
++         {OFFSET(lcd_vsync), (MODE(7) | PULLUDEN)},   /* GPIO2_22 */    //-->KM-LCD_RS
++         {OFFSET(lcd_pclk),  (MODE(7) | PULLUDEN)},   /* GPIO2_24 */    //-->KM-LCD_EN
++         {OFFSET(lcd_hsync), (MODE(7) | PULLUDEN)},   /* GPIO2_23 */    //-->KM-LCD_RW
++-        {OFFSET(lcd_data13), (MODE(0))},             /* lcd_data13 */ // By default disable Buzzer
++-        {OFFSET(lcd_data14), (MODE(0))},             /* lcd_data14 */ // By default disable USER LED
++-        {OFFSET(lcd_data15), (MODE(0))},             /* lcd_data15 */ // Bydefault disable USER SW
+++        {OFFSET(lcd_data13), (MODE(7))},             /* lcd_data13.gpio0_9 */ // By default disable Buzzer
+++        {OFFSET(lcd_data14), (MODE(7))},             /* lcd_data14/gpio0_10 */ // By default disable USER LED
+++        {OFFSET(lcd_data15), (MODE(7) | PULLUDEN | PULLDOWN_EN | RXACTIVE)},             /* lcd_data15.gpio0_11 */ // Bydefault disable USER SW
++ 
++         {-1},
++ };
++-- 
++2.17.1
++
+diff --git a/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend b/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend
+index e521920..8dcc364 100644
+--- a/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend
++++ b/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend
+@@ -1,6 +1,6 @@
+ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+ 
+-#SRC_URI += "file://0001-Customize-config-and-boot-command.patch"
++SRC_URI += "file://0001-Enable-GPIO9-Buz-10-LED-11-SW-Mux.patch"
+ 
+ UBOOT_SUFFIX = "img"
+ SPL_BINARY = "MLO"
+-- 
+2.17.1
+
