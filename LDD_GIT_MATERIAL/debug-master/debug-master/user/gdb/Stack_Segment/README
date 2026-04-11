@@ -1,0 +1,100 @@
+Segment:
+--------
+Offset is term originated from one of the memory addressing technique implementation from Intel for ‘Physical Memory/RAM’. 
+What is memory addressing technique: a way to access/read/write interested location in RAM based on address. 
+
+Some major points to clear
+1)It is a memory addressing technique 
+2)Introduced by Intel in 1978 starting its 8086 CPU. Now used by all CPU who are based on Intel x-86 CPU architecture. 
+3)As time advanced so is the memory requirement. In 8086 which has 16 bit CPU (maximum bit any register in CPU can store). Total memory that can be addressed is 2^16 = 65536 locations where if 1 location in memory represents 1 BYTE so total addressable RAM = 65536 BYTES = 64 KB. Much more sufficient before 8086. From 8086 memory hungry application increased and Intel CPU designed desire was that without changing the CPU design (i.e. CPU max bit limit should remain to 16 bit only) we could address more memory. So, they introduced two separate 16 bit registers. One can store segment and other can store offset. Segmentation is in fundamental terms dividing memory into separate parts. Each part is called Segment. Offset is individual memory location within each Segment (or part). There are two total of 65536 ‘overlapping’ (it is confusing but this is a truth to understand) segment starting from 0. Each Segment is 64 KB (65536 Bytes) long i.e. total bytes present in each segment 65536 bytes. These bytes within each segment are represented by Offsets. Each next overlapping segment starts after 16 bytes. So, total addressable memory 65536 segments * 16 = 1048576 BYTES = 1 MB. In the essence using Segment:Offset memory addressing technique we can address each and every cell in full 1 MB memory. Address bus used at the time of 8086 = 20 bits = 220 = 1 MB. Latest CPU has 32 bit address lines(2^32 = 4GB) and 32 bit or 64 bit segment and offset register. 
+4)Example: If you want to address memory cell have address in decimal 7179 then is Segment:Offset notation it is 01AF:011B = 01AF0 + 011B (Hexadecimal Addition) = 1C0B = 7179. 
+5) There is lot of confusion when Memory Segmentation is assumed solely as Memory Protection Technique. It is true if you divide memory into segments then you can divide it into different segments having different permission like code segment, data segment etc. But memory protection is the usage of memory segmentation and Segment:Offset is the memory addressing techniue.
+
+Pointer Sizes:
+-------------
+
+Pointer formats are known as near, far, or huge.
+
+Near pointers refer to the current segment, so neither DS nor CS must be modified to dereference the pointer. They are the fastest pointers, but are limited to point to 64 KB of memory (the current segment).
+
+Far pointers contain the new value of DS or CS within them. To use them the register must be changed, the memory dereferenced, and then the register restored. They may reference up to 1 MiB of memory. Note that pointer arithmetic (addition and subtraction) does not modify the segment portion of the pointer, only its offset. Operations which exceed the bounds of zero or 65535 (0xFFFF) will undergo modulo 64K operation just as any normal 16 bit operation. The moment counter becomes (0x10000), the resulting absolute address will roll over to 0x5000:0000.
+
+Huge pointers are essentially far pointers, but are normalized every time they are modified so that they have the highest possible segment for that address. This is very slow but allows the pointer to point to multiple segments, and allows for accurate pointer comparisons, as if the platform were a flat memory model: It forbids the aliasing of memory as described above, so two huge pointers that reference the same memory location are always equal.
+
+
+
+Stack Frame:
+-----------
+When a function is called, the stack frame is formed as follows (grows from higher addresses toward
+lower addresses; the colour-coding below is just a visual aid):
+
+1. Parameters are pushed onto the stack in reverse order (because of the LIFO mechanism)
+2. When the assembly language "call" instruction is issued, to change the execution context to the
+called function, the return address is pushed onto the stack. This will be the address of the instruction
+following the current EIP.
+3. (Procedure Prolog): Current value of EBP (the frame pointer) is pushed onto the stack. This value is
+called the Saved Frame Pointer (SFP) and is later used to restore EBP back to it's original state. The
+current value of ESP is then copied into EBP to set the new frame pointer.
+4. Memory is allocated onto the stack for local (automatic) variables by subtracting from ESP. The
+memory allocated for these variables isn't pushed onto the stack, so the variables are in expected (same)
+order (as their being declared).
+
+Base Pointer:
+-----------
+The bp, or base pointer (also referred to as frame pointer) register is used to
+hold the address of the beginning or base of the current frame. The purpose of
+this is so that a common reference point for all local stack variables can be
+used. In other words, stack variables are referenced by the bp register plus an
+offset. When working in a particular stack frame, the value of this register will
+never change. Each stack frame has its own unique bp value.
+
+...............
+---------------  <-- top of the stack, ESP ; lower addresses upward
+local var n
+---------------
+...
+---------------
+local var 2
+---------------
+local var 1
+---------------
+SFP
+--------------- <-- frame ptr EBP
+return addr
+---------------
+param 1
+---------------
+param 2
+---------------
+param 3
+---------------
+param 4
+---------------
+...
+---------------
+param n
+--------------- <-- bottom of stack, higher addresses.
+
+This is the stack frame. Local variables are referenced by subtracting from the frame pointer EBP, and
+the function arguments are referenced by adding to it.
+
+So, basically, we can summarize the stack frame as being formed like this:
+[...    <-- Top (ESP); lower addresses.
+LOCALS
+...]
+SFP     <-- EBP
+RET addr
+[...
+PARAMS
+...]    <-- Bottom; higher addresses.
+
+gdb commands:
+-----------
+
+bt
+
+p $rsp
+p $rbp
+
+x/20x $rsp
+x/20x $rbp

@@ -1,0 +1,46 @@
+                                                                            
+Entering kdb (current=0xedaf4a80, pid 819) on processor 1 Oops: (null)       
+due to oops @ 0xbf000034                                                     
+                                                                             
+Pid: 819, comm:                  cat                                         
+CPU: 1    Tainted: G        W  O  (3.9.11-gbd3ff3b-dirty #4)
+PC is at my_open+0x1c/0x48 [char]       
+LR is at my_open+0x10/0x48 [char]       
+pc : [<bf000034>]    lr : [<bf000028>]    psr: 20000113
+sp : ede21de8  ip : ede21cc0  fp : ed9585c0
+r10: ed94b098  r9 : 00000000  r8 : c0116fa4
+r7 : 00000000  r6 : ed9585c0  r5 : ed94b098  r4 : bf000440
+r3 : bf000268  r2 : 00000000  r1 : 00000001  r0 : bf000198
+Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+Control: 10c53c7d  Table: adde404a  DAC: 00000015
+[<c001b208>] (unwind_backtrace+0x0/0xf0) from [<c00a61c4>] (kdb_dumpregs+0x28/0x50)
+[<c00a61c4>] (kdb_dumpregs+0x28/0x50) from [<c00a857c>] (kdb_main_loop+0x398/0x6fc)
+[<c00a857c>] (kdb_main_loop+0x398/0x6fc) from [<c00aaeac>] (kdb_stub+0x1c8/0x414)
+[<c00aaeac>] (kdb_stub+0x1c8/0x414) from [<c00a1ad0>] (kgdb_cpu_enter+0x3b8/0x6a4)
+[<c00a1ad0>] (kgdb_cpu_enter+0x3b8/0x6a4) from [<c00a2040>] (kgdb_handle_exception+0x164/0x1d0)
+[<c00a2040>] (kgdb_handle_exception+0x164/0x1d0) from [<c001a930>] (kgdb_notify+0x2c/0x64)
+[<c001a930>] (kgdb_notify+0x2c/0x64) from [<c05092d8>] (notifier_call_chain+0x44/0x84)
+[<c05092d8>] (notifier_call_chain+0x44/0x84) from [<c0509378>] (__atomic_notifier_call_chain+0x6)
+[<c0509378>] (__atomic_notifier_call_chain+0x60/0x8c) from [<c05093bc>] (atomic_notifier_call_ch)
+[<c05093bc>] (atomic_notifier_call_chain+0x18/0x20) from [<c05093fc>] (notify_die+0x38/0x44)
+[<c05093fc>] (notify_die+0x38/0x44) from [<c0017a30>] (die+0xd0/0x42c)
+[<c0017a30>] (die+0xd0/0x42c) from [<c04ff5a4>] (__do_kernel_fault.part.8+0x54/0x74)
+[<c04ff5a4>] (__do_kernel_fault.part.8+0x54/0x74) from [<c0508fc0>] (do_page_fault+0x1d0/0x3fc)
+[<c0508fc0>] (do_page_fault+0x1d0/0x3fc) from [<c000839c>] (do_DataAbort+0x34/0x98)
+[<c000839c>] (do_DataAbort+0x34/0x98) from [<c05075a4>] (__dabt_svc+0x44/0x80)
+Exception stack(0xede21da0 to 0xede21de8)
+1da0: bf000198 00000001 00000000 bf000268 bf000440 ed94b098 ed9585c0 00000000
+1dc0: c0116fa4 00000000 ed94b098 ed9585c0 ede21cc0 ede21de8 bf000028 bf000034
+1de0: 20000113 ffffffff
+[<c05075a4>] (__dabt_svc+0x44/0x80) from [<bf000034>] (my_open+0x1c/0x48 [char])
+[<bf000034>] (my_open+0x1c/0x48 [char]) from [<c011702c>] (chrdev_open+0x88/0x16c)
+[<c011702c>] (chrdev_open+0x88/0x16c) from [<c011156c>] (do_dentry_open+0x1f8/0x270)
+[<c011156c>] (do_dentry_open+0x1f8/0x270) from [<c0111618>] (finish_open+0x34/0x4c)
+[<c0111618>] (finish_open+0x34/0x4c) from [<c011fc30>] (do_last.isra.27+0x4d4/0xb7c)
+[<c011fc30>] (do_last.isra.27+0x4d4/0xb7c) from [<c0120384>] (path_openat+0xac/0x47c)
+[<c0120384>] (path_openat+0xac/0x47c) from [<c0120a10>] (do_filp_open+0x2c/0x80)
+[<c0120a10>] (do_filp_open+0x2c/0x80) from [<c01126f4>] (do_sys_open+0xe4/0x174)
+[<c01126f4>] (do_sys_open+0xe4/0x174) from [<c0013660>] (ret_fast_syscall+0x0/0x3c)
+more> 
+[1]kdb> 
+

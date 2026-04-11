@@ -1,0 +1,531 @@
+*Communicating with Hardware @ u-boot command prompt (Experiment 6 to 8)*
+
+Experiment 6: Read sys boot pin status
+Find out PA of control status reg:
+PA of Control Status Reg = BA of Control Module (memory mapping chapter) + OA of Control status reg (control module chapter)
+= 0x44E10000 + 0x40
+= 0x44E10040
+=> md 0x44E10040
+Results:
+0x3C = 001 11 1 00
+0x38 =       001 11 0 00
+0040033c -> 11100 -> booting from eMMC -> sys boot sw OFF
+00400338 -> 11000 -> booting from SDcard -> sys boot sw ON
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+Experiment 7: MUX configuration of RED LED (GPIO: output) to Output device
+
+Physical Address of LCD_DATA14 (V4) REGISTER =
+Base address of Control module (pg. NO 179) + Offset address of LCD_DATA14 REGISTER (Pg. No: 1371)
+ =  0x44E1 0000 + 0x0000 08D8  = 0x44E1 08D8
+Kishore=> md.b 0x44E108D8 1
+44e108d8: 00                                                 .
+Kishore=> mm.b 0x44E108D8
+44e108d8: 00 ? 07
+44e108d9: 00 ? q
+Kishore=> mm.b 0x44E108D8
+44e108d8: 07 ? q
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Experiment 8: Mux configuration of +ve level (or) -ve level Switch (GPIO: Input) to input device
+
+Physical Address of LCD_DATA15 REGISTER = = 0x44E1 0000 + 0x0000 08DC = 0x44E108DC
+
+Case 1: +ve Level Switch (Pull Down) (ON = 1 ; OFF = 0)
+    0010 0111  => 27H (Pull Down - Mux Mode 7)
+
+GPIO0_11 => Enter Switch
+ 
+Case 2: -ve Level Switch (Pull Up) (ON = 0 ; OFF = 1)
+
+  0011 0111  => 37H (Pull up - Mux Mode 7)
+
+Results:
+
+=> gpio input 11
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+*Mux Configuration of GPIO [LED, Buzzer & Switch] in u-boot source code (Experiments 9 to 11)*
+--------------------------------------------------------------------------------------------
+
+*Experiment 9: Mux configuration of RED LED*
+Enable GPIO0_10 functionality to work like LED in LCD_DATA14 mux configuration.
+
+Source code files:
+board/ti/am335x/mux.c
+
+ 34         {OFFSET(lcd_data14), (MODE(7))},             /* lcd_data14.gpio0_10 */ // By default disable USER LED
+
+
+After build & testing,
+
+Tag name: Exp9
+Commit Message: Select LCD_DATA14 pin functionality to enable GPIO0_10 to RED LED
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+*Experiment 10: Mux configuration of Enter Switch*
+Enable GPIO0_11 functionality to work like Enter Switch, in LCD_DATA15 mux configuration.
+
+Source code files:
+board/ti/am335x/mux.c
+
+After build & testing,
+Tag name: Exp10
+Commit Message: Select LCD_DATA15 pin functionality to enable GPIO0_11 to enter switch.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+*Experiment 11: Mux configuration of Buzzer*
+Enable GPIO0_9 functionality to work like Buzzer, in LCD_DATA13 mux configuration.
+
+Source code files:
+board/ti/am335x/mux.c
+After build & testing,
+
+Tag name: Exp11
+Commit Message: Select LCD_DATA13 pin functionality to enable GPIO0_9 to Buzzer
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+Ctags:
+Select tag: ctrl + }
+Back : ctrl + t
+get file name: ctrl + g
+
+Mulitiple occurences:  ts (tag selection)
+how to search a tag:
+:tag <tag name>
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+*GPIO Device Driver framework in u-boot source code (Experiments 12 to 13)*
+
+*Experiment 12: Prepare GPIO Device Driver framework (source code flow) [gpio set 10]*
+
+Write printf (“%s:%s:%d\n”,__FILE__,__func__,__LINE__) function in the below files, build the
+source code and test “gpio set 10” in u-boot command prompt.
+
+Source files:
+cmd/gpio.c (CONFIG_CMD_GPIO=y)
+command line interface -> device access commands -> gpio
+
+drivers/gpio/gpio-uclass.c (CONFIG_DM_GPIO=y)
+Device Drivers -> GPIO Support -> Enable Driver Model for GPIO drivers
+ 
+drivers/gpio/omap_gpio.c (CONFIG_OMAP_GPIO=y)
+Device Drivers -> GPIO Support -> TI OMAP GPIO drivers
+
+
+After build & testing,
+Tag name: Exp12
+Commit Message: Prepare GPIO framework - “gpio set 10”
+
+-------------------------------------------------------------------------------------------------------
+*Experiment 13: GPIO framework [gpio input 11]*
+Write printf (“%s:%s:%d\n”,__FILE__,__func__,__LINE__) function in the below files, build the
+source code and test “gpio input 11” in u-boot command prompt.
+
+Source files:
+cmd/gpio.c
+drivers/gpio/gpio-uclass.c
+drivers/gpio/omap_gpio.c
+
+After build & testing,
+Tag name: Exp13
+Commit Message: Prepare GPIO framework - “gpio input 11”
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+*U-boot customization (Experiment 14,15,16)*
+
+*Experiment 14: REAL ASSIGNMENT*
+Add blink option to gpio u-boot command and make it blink every 100 msec delay up to user press Ctrl+C.
+Syntax: gpio <input|set|clear|toggle|blink> <pin>
+Example: gpio blink <pin>
+
+Source files:
+cmd/gpio.c
+
+After build & testing,
+Tag name: Exp14
+Commit Message: u-boot customization: Add blink option to gpio u-boot command
+
+
+
+*Experiment 15: REAL ASSIGNMENT*
+Implement blink command in u-boot command prompt. Blink command to control GPIO pin every 100msec delay up to user press Ctrl+C.
+
+Syntax: blink <pin>
+Example: blink 10
+
+Source files:
+cmd/blink.c
+cmd/Makefile
+
+After build & testing,
+Tag name: Exp15
+Commit Message: u-boot customization – Add blink command in u-boot command prompt
+
+
+
+*Experiment 16: REAL ASSIGNMENT*
+
+How reset command works?
+
+Source files:
+arch/arm/lib/reset.c,
+arch/arm/mach-omap2/reset.c,
+writel(PRM_RSTCTRL_RESET, PRM_RSTCTRL);
+TRM document Page no: 1340
+8.1.13.5.1 PRM_RSTCTRL Register (offset = 0h) [reset = 0h]
+
+
+Testing,
+=> md 0x44E00F00
+00000000?00000001
+
+
+
+Communicate with Hardware @ Linux command prompt (Experiment 16 & 17)
+
+Experiment 16: Control GPIO pins from sys file system entry @ user space
+1. Enter gpio class in sysfs file system,
+$ cd /sys/class/gpio
+2. Enter root login,
+/sys/class/gpio/$ sudo su
+3. Export pin 10,
+/sys/class/gpio/# echo 10 > export
+4. Enter gpio10 folder,
+/sys/class/gpio/# cd gpio10
+5. Change pin direction to output,
+/sys/class/gpio/gpio10/# echo out > direction
+6. LED ON,
+/sys/class/gpio/gpio10/# echo 1 > value
+7. LED OFF,
+/sys/class/gpio/gpio10/# echo 0 > value
+8. Unexport pin 10,
+/sys/class/gpio/gpio10/# cd ..
+/sys/class/gpio/# echo 10 > unexport
+
+Experiment 17: Monitoring Mux Configuration and GPIO pins using debug file system.
+1. Enter root login,
+$ sudo su
+2. To read 128 GPIO pins status,
+# cat /sys/kernel/debug/gpio
+3. To read Mux configuration of each pin,
+# cat /sys/kernel/debug/pinctrl/44e10800.pinmux-pinctrl-single/pins
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Experiment 18: Write hello world module program and compile with ARM cross toolchain and transfer the binary file to target board using SD Card (or) scp. 
+
+Finally load the module in KM-BBB expansion board and verify the results.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Mux Configuration of GPIO [LED, Buzzer & Switch] in device tree source code (Experiment 20 & 21)
+
+Experiment 20: LED,Buzzer & Switch Mux configuration in u-boot
+Case 1: Enable LED, BUZZER, and Switch MUX configuration in u-boot source code.
+We have enabled Mux, already in “Experiments 9 to 11” inside u-boot repository.
+
+Expected Results: LED, BUZZER and Switch devices should work properly in Linux command prompt.
+
+Case 2: Disable LED, BUZZER, and Switch MUX configuration in u-boot source code. (switch to master
+branch)
+Once you switch to master branch inside u-boot repository, MUX is disabled.
+Expected Results: LED, BUZZER and Switch devices don’t work in Linux command prompt.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Experiment 21: Mux Configuration of GPIO in device tree source code.
+Enable LED, Buzzer and Switch MUX configuration in device tree source code.
+
+Source files:
+arch/arm/boot/dts/am335x-bone-common.dtsi
+
+Tag name: Exp21
+Commit Message: “Mux Config in DTS: LCD_DATA_13.GPIO0_9, LCD_DATA14.GPIO0_10 & LCD_DATA_15.GPIO0_11”
+Expected Results: LED, BUZZER and Switch devices should work properly in Linux command prompt.
+
+ 41                         AM33XX_IOPAD(0x8d4, MUX_MODE7)    /* lcd_data13.gpio0_9 (BUZZER) */
+ 42                         AM33XX_IOPAD(0x8d8, MUX_MODE7)    /* lcd_data14.gpio0_10(RED LED) */
+ 43                         AM33XX_IOPAD(0x8dc, MUX_MODE7 | PIN_INPUT_PULLUP ) /* lcd_data15.gpio0_11 (ENTER SWITCH) */
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+GPIO Test Modules (Experiment 22)
+
+Experiment 22: GPIO Device driver Test cases.
+To test GPIO device controller operations such as input, output and interrupt we can use module programming technique. 
+These programs can be referred to as GPIO Test modules.
+
+Source files:
+gpio-output.c
+gpio-input.c
+gpio-interrupt.c
+
+Process:
+Cross compile the modules and transfer images (.ko files) to target board. Then load each
+module.
+Test GPIO input/output/interrupt to read/write to the GPIO pins using cat/echo commands.
+Unload the module.
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+GPIO Framework in Kernel space
+------------------------------
+Experiment 23: Prepare GPIO Initialization framework
+-----------------------------------------------------
+Case 1:
+Add printk's in init functions and at the start & end of probe function in drivers/gpio/gpio-omap.c
+(Line no: 1764, 1246, 1361 )
+
+Run km-bbb-kernel-build.sh script and generate images.
+Install kernel images in to target board using mmc (or) tftp (or) scp.
+
+Reboot target board, run dmesg command and verfiy printk results in kernel log.
+
+Expected Results:
+Probe is invoked 4 times because in device tree source code compatible name “omap4-gpio” matches in gpio driver 4 times.
+-------------------------------------------------------------------------------------------------
+[    0.255521] drivers/gpio/gpio-omap.c:omap_gpio_probe:1246
+[    0.258392] drivers/gpio/gpio-omap.c:omap_gpio_probe:1361
+[    0.259600] drivers/gpio/gpio-omap.c:omap_gpio_probe:1246
+[    0.261258] drivers/gpio/gpio-omap.c:omap_gpio_probe:1361
+[    0.262270] drivers/gpio/gpio-omap.c:omap_gpio_probe:1246
+[    0.263659] drivers/gpio/gpio-omap.c:omap_gpio_probe:1361
+[    0.264641] drivers/gpio/gpio-omap.c:omap_gpio_probe:1246
+[    0.265975] drivers/gpio/gpio-omap.c:omap_gpio_probe:1361
+--------------------------------------------------------------------------------------------------
+
+km@KM-BBB:/sys/class/gpio$ ls
+export  gpio45  gpio47  gpio87  gpio9      gpiochip32  gpiochip96
+gpio44  gpio46  gpio86  gpio88  gpiochip0  gpiochip64  unexport
+
+$ cat /sys/kernel/debug/gpio
+
+Case 2:
+Replace “gpio1, gpio2 and gpio3” compatible names with “test-omap” name in arch/arm/boot/dts/am33xx.dtsi file.
+
+Run below command to build device tree source code.
+$ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- dtbs
+Copy dtb image “km-bbb-am335x.dtb” to target board at “/boot/dtbs/uname -r/” location.
+Reboot target board, run dmesg and verify printk results in kernel log.
+
+Expected Results:
+Probe is invoked only 1 time because in device tree source code compatible name “omap-gpio”
+matches in gpio driver 1 time only. OMAP GPIO Device driver doesn’t recognize other 3 names as those
+names were replaced by “test-omap” but driver can understand “gpio-omap” name.
+
+--------------------------------------------------------------------------
+[    0.255399] drivers/gpio/gpio-omap.c:omap_gpio_probe:1246
+[    0.258288] drivers/gpio/gpio-omap.c:omap_gpio_probe:1361
+--------------------------------------------------------------------------
+km@KM-BBB:/sys/class/gpio$ ls
+export  gpio9  gpiochip0  unexport
+
+$ cat /sys/kernel/debug/gpio
+
+After Testing, don't commit this modifications. revert the source code back to case 1.  
+$ git reset --hard Exp20
+
+
+Experiment 24: Prepare GPIO Operation framework
+-----------------------------------------------
+
+Disable CONFIG_LEDS_GPIO configuration option to avoid continuous print messages.
+
+Enable printk’s in the below mentioned functions:
+
+drivers/gpio/gpiolib.c:
+
+gpiod_request()
+gpiod_direction_input()
+gpiod_direction_output_raw_commit()
+gpiod_direction_output()
+gpiod_get_raw_value_commit()
+gpiod_get_value()
+// gpiod_set_value()
+gpiod_to_irq()
+
+drivers/gpio/gpio-omap.c:
+
+omap_set_gpio_direction()
+omap_gpio_request()
+omap_gpio_get_direction()
+omap_gpio_input()
+omap_gpio_get()
+omap_gpio_output()
+// omap_gpio_set()
+
+Run km-bbb-kernel-build.sh script and generate images.
+Install kernel images in to target board using mmc (or) tftp (or) scp.
+
+Reboot target board , run “$ cat /sys/class/gpio10/value” & “$ dmesg” commands in folder and verify printk results in kernel log.
+
+
+
+root@KM-BBB:/sys/class/gpio/gpio10# cat direction
+
+------------------------------------------------------------------------------------------------------
+
+drivers/gpio/gpiolib.c:gpiod_get_direction:217  ->  
+drivers/gpio/gpiolib.c:gpiod_get_direction:232 ->   status = chip->get_direction(chip, offset);
+-----------------------------------------------------------------------------   
+
+----------------------------
+include/linux/gpio/driver.h:  
+----------------------------
+struct chip 
+{
+238         int                     (*request)(struct gpio_chip *chip, unsigned offset);
+240         void                    (*free)(struct gpio_chip *chip, unsigned offset);
+242         int                     (*get_direction)(struct gpio_chip *chip, unsigned offset);
+244         int                     (*direction_input)(struct gpio_chip *chip, unsigned offset);
+246         int                     (*direction_output)(struct gpio_chip *chip, unsigned offset, int value);
+248         int                     (*get)(struct gpio_chip *chip, unsigned offset);
+250         int                     (*get_multiple)(struct gpio_chip *chip, unsigned long *mask, unsigned long *bits);
+253         void                    (*set)(struct gpio_chip *chip, unsigned offset, int value);
+255         void                    (*set_multiple)(struct gpio_chip *chip, unsigned long *mask,  unsigned long *bits);
+258         int                     (*set_config)(struct gpio_chip *chip, unsigned offset, unsigned long config);
+261         int                     (*to_irq)(struct gpio_chip *chip,    unsigned offset);
+263         void                    (*dbg_show)(struct seq_file *s, sruct gpio_chip *chip);
+}
+------------------------------------------------------------------------------------
+[  160.402457] drivers/gpio/gpio-omap.c:omap_gpio_get_direction:990
+------------------------------------------------------------------------------------
+
+root@KM-BBB:/sys/class/gpio/gpio10# echo out > direction
+
+[ 2703.050477] drivers/gpio/gpiolib.c:gpiod_direction_output_raw:2640
+[ 2703.056730] drivers/gpio/gpiolib.c:gpiod_direction_output_raw_commit:2598
+-----------------------------------------------------------------------------------------
+
+[ 2703.063788] drivers/gpio/gpio-omap.c:omap_gpio_output:1027
+[ 2703.069319] drivers/gpio/gpio-omap.c:omap_set_gpio_direction:106
+
+
+root@KM-BBB:/sys/class/gpio/gpio10# echo  1 > value
+[ 5252.691575] drivers/gpio/gpiolib.c:gpiod_set_value_nocheck:3198
+
+After Testing, don't commit this modifications. revert the source code back to previous experiement.  
+$ git reset --hard Exp20
+
+
+
+GPIO @ User space: REAL ASSIGNMENT
+-----------------
+Experiment 25: gpio command in Linux command prompt
+
+Implement your own version of gpio command in Linux that works same as u-boot command prompt.
+Example: $ gpio <set|clear|toggle> <pin>
+
+$ gpio set 10
+
+1. echo 10 > export
+
+void gpio_export(int pin)
+{
+fd = open (“/sys/class/gpio/export”, O_WRONLY)
+Write (fd, pin ,1024);
+Close(fd);
+}
+
+
+2. echo out > direction
+
+void gpio_direction(int pin, char *buff)
+{
+char buf[50];
+sprintf(buf, “/sys/class/gpio/gpio%d/direction”,pin)
+fd = Open (buf, O_WRONLY)
+Write (fd, "out",1024);
+Close(fd);
+}
+
+
+3. echo 1 > value
+
+fd = Open (“/sys/class/gpio/gpio10/value”, O_WRONLY)
+Write (fd,1,1024);
+Close(fd);
+
+4. echo 10 > unexport
+
+void gpio_export(int pin)
+{
+fd = Open (“/sys/class/gpio/unexport”, O_WRONLY)
+Write (fd, pin,1024);
+Close(fd);
+}
+
+
+
+
+
+
+*GPIO PROJECT (/dev/input/event0)*
+
+Experiment 26: Enter Switch (Raising Edge Interrupt) porting on KM_BBB target board (AM335x Controller)
+Subsystem names: “Input Sub system” & “GPIO sub system” in Kernel.
+
+Tag name: Exp26
+Commit Message: “Enter Switch (GPIO11: Raising Edge Interrupt) porting on KM-BBB target board”
+
+
+HDD: 1st sub system: general – Input - RTC – V4L - ALSA
+LDD: 2nd sub system: Device controller – GPIO – I2C – RGB – I2S/I2C
+
+@ U-boot Level - Troubleshooting:
+Step 1: Add GPIO Key Mux configuration in u-boot source code.
+Step 2: Test GPIO Key functionality using gpio command at u-boot command prompt
+
+@ Kernel Level:
+Step 3: Enable GPIO keys driver and interrupt in Device tree source code.
+arch/arm/boot/dts/km-bbb-am335x.dts
+
+Step 4: Enable GPIO Key driver as module in kernel configuration file and cross compile.
+
+
+
+GPIO Key Driver Initalization:
+------------------------------
+
+[    2.070673] drivers/input/keyboard/gpio_keys.c:gpio_keys_probe:781
+
+pin no 11 -> input -> interrupt
+[    2.077297] drivers/gpio/gpiolib.c:gpiod_request:2393
+[    2.083033] drivers/gpio/gpiolib.c:gpiod_request_commit:2300
+[    2.088750] drivers/gpio/gpio-omap.c:omap_gpio_request:694
+[    2.094389] drivers/gpio/gpio-omap.c:omap_gpio_get_direction:987
+[    2.100465] drivers/gpio/gpiolib.c:gpiod_direction_input:2556
+[    2.106314] drivers/gpio/gpio-omap.c:omap_gpio_input:1001
+[    2.111781] drivers/gpio/gpiolib.c:gpiod_to_irq:3318
+[    2.117037] drivers/gpio/gpio-omap.c:omap_gpio_get_direction:987
+[    2.123965] input: gpio-keys as /devices/platform/gpio-keys/input/input0
+[    2.130907] drivers/gpio/gpio-omap.c:omap_gpio_get:1013
+
+
+[    2.136986] drivers/input/keyboard/gpio_keys.c:gpio_keys_probe:876
+
+---------------------------------------------------------------------------------
+
+
+
+Experiment 27:  REAL PROJECT  (/dev/input/event0)
+UP & Down Switches (Falling Edge Interrupt) porting on KM_BBB target board (AM335x Controller).
+Subsystem names: “Input Sub system” & “GPIO sub system” in Kernel.
+Tag name: Exp27
+Commit Message: “UP & Down Switches (Falling Edge Interrupt) porting on KM_BBB target board”

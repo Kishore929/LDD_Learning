@@ -1,0 +1,62 @@
+From 2ed1c02bcda393025f36e3eb494c47ad367807d7 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Tue, 9 Aug 2022 21:26:17 +0530
+Subject: [PATCH] i2c1 enable in dts file
+
+---
+ arch/arm/boot/dts/km-bbb-am335x.dts | 20 ++++++++++++++++++++
+ drivers/i2c/busses/i2c-omap.c       |  3 +++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/arch/arm/boot/dts/km-bbb-am335x.dts b/arch/arm/boot/dts/km-bbb-am335x.dts
+index cfbddead0..3bdabe66d 100644
+--- a/arch/arm/boot/dts/km-bbb-am335x.dts
++++ b/arch/arm/boot/dts/km-bbb-am335x.dts
+@@ -53,3 +53,23 @@
+ 	};
+ };
+ 
++&am33xx_pinmux {
++
++       i2c1_pins: pinmux_i2c1_pins {
++                pinctrl-single,pins = <
++                         AM33XX_PADCONF(AM335X_PIN_SPI0_CS0, PIN_INPUT_PULLUP, MUX_MODE2)        /* spi0_cs0.i2c0_scl */
++                         AM33XX_PADCONF(AM335X_PIN_SPI0_D1, PIN_INPUT_PULLUP, MUX_MODE2)        /* spi0_d1.i2c0_sda */
++                 >;
++        };
++
++};
++
++
++&i2c1 {
++          pinctrl-names = "default";
++          pinctrl-0 = <&i2c1_pins>;
++          status = "okay";
++          clock-frequency = <100000>;
++          symlink = "bone/i2c/0";
++};
++
+diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
+index faa039404..4b18a0326 100644
+--- a/drivers/i2c/busses/i2c-omap.c
++++ b/drivers/i2c/busses/i2c-omap.c
+@@ -1374,6 +1374,8 @@ omap_i2c_probe(struct platform_device *pdev)
+ 	u32 rev;
+ 	u16 minor, major;
+ 
++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+ 		dev_err(&pdev->dev, "no irq resource?\n");
+@@ -1521,6 +1523,7 @@ omap_i2c_probe(struct platform_device *pdev)
+ 	pm_runtime_mark_last_busy(omap->dev);
+ 	pm_runtime_put_autosuspend(omap->dev);
+ 
++	printk("%s:%s:%d\n",__FILE__,__func__,__LINE__);
+ 	return 0;
+ 
+ err_unuse_clocks:
+-- 
+2.17.1
+

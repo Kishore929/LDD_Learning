@@ -1,0 +1,41 @@
+From ac088f1132ff47090dbd779f5659156d03b0d566 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Thu, 12 May 2022 21:51:05 +0530
+Subject: [PATCH] hello.c file ADDED in keyboard folder
+
+---
+ drivers/input/keyboard/hello.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100644 drivers/input/keyboard/hello.c
+
+diff --git a/drivers/input/keyboard/hello.c b/drivers/input/keyboard/hello.c
+new file mode 100644
+index 000000000..93c19b130
+--- /dev/null
++++ b/drivers/input/keyboard/hello.c
+@@ -0,0 +1,22 @@
++#include<linux/module.h> /* module_init() , module_exit() */
++#include<linux/init.h>
++#include<linux/kernel.h> /* printk() */
++
++
++MODULE_AUTHOR("Kernel Masters");
++MODULE_DESCRIPTION("Hello world module template");
++MODULE_LICENSE("GPL V2");
++
++static int hello_init(void)
++{
++	printk("Hello World: init() func\n");
++	return 0;
++}
++
++static void hello_exit(void)
++{
++	printk("Hello World: exit() func\n");
++}
++
++module_init(hello_init);
++module_exit(hello_exit);
+-- 
+2.17.1
+

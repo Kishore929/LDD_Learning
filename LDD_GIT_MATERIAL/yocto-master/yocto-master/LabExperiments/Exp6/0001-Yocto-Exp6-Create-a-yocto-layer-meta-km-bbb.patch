@@ -1,0 +1,190 @@
+From fad68f9711f2614f97d5437a5c119a65836a20b4 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Wed, 4 May 2022 22:18:01 +0530
+Subject: [PATCH] Yocto-Exp6: Create a yocto layer [meta-km-bbb]
+
+---
+ meta-km-bbb/COPYING.MIT                       | 17 +++++++
+ meta-km-bbb/README                            | 46 +++++++++++++++++++
+ meta-km-bbb/conf/layer.conf                   | 13 ++++++
+ .../recipes-example/example/example_0.1.bb    | 11 +++++
+ .../linux/linux-stable_%.bbappend             |  2 +
+ .../0001-Add-Volume-UP-DOWN-Switches.patch    | 42 +++++++++++++++++
+ 6 files changed, 131 insertions(+)
+ create mode 100644 meta-km-bbb/COPYING.MIT
+ create mode 100644 meta-km-bbb/README
+ create mode 100644 meta-km-bbb/conf/layer.conf
+ create mode 100644 meta-km-bbb/recipes-example/example/example_0.1.bb
+ create mode 100644 meta-km-bbb/recipes-km-bbb-kernel/linux/linux-stable_%.bbappend
+ create mode 100644 meta-km-bbb/recipes-km-bbb-kernel/linux/patches/0001-Add-Volume-UP-DOWN-Switches.patch
+
+diff --git a/meta-km-bbb/COPYING.MIT b/meta-km-bbb/COPYING.MIT
+new file mode 100644
+index 0000000..fb950dc
+--- /dev/null
++++ b/meta-km-bbb/COPYING.MIT
+@@ -0,0 +1,17 @@
++Permission is hereby granted, free of charge, to any person obtaining a copy 
++of this software and associated documentation files (the "Software"), to deal 
++in the Software without restriction, including without limitation the rights 
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
++copies of the Software, and to permit persons to whom the Software is 
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in 
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
++THE SOFTWARE.
+diff --git a/meta-km-bbb/README b/meta-km-bbb/README
+new file mode 100644
+index 0000000..1b40962
+--- /dev/null
++++ b/meta-km-bbb/README
+@@ -0,0 +1,46 @@
++This README file contains information on the contents of the meta-km-bbb layer.
++
++Please see the corresponding sections below for details.
++
++Dependencies
++============
++
++Kernel Repo
++
++  URI: https://github.com/kernelmasters/beagleboneblack-kernel.git
++  branch: master
++  commit ID: 
++
++U-boot Repo
++
++  URI: https://github.com/kernelmasters/beagleboneblack-uboot.git
++  branch: master
++  commit ID:
++  .
++  .
++  .
++
++Patches
++=======
++
++Please submit any patches against the meta-km-bbb layer to the xxxx mailing list (xxxx@zzzz.org)
++and cc: the maintainer:
++
++Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
++
++Table of Contents
++=================
++
++  I. Adding the meta-km-bbb layer to your build
++ II. Misc
++
++
++I. Adding the meta-km-bbb layer to your build
++=================================================
++
++Run 'bitbake-layers add-layer meta-km-bbb'
++
++II. Misc
++========
++
++--- replace with specific information about the meta-km-bbb layer ---
+diff --git a/meta-km-bbb/conf/layer.conf b/meta-km-bbb/conf/layer.conf
+new file mode 100644
+index 0000000..51008ce
+--- /dev/null
++++ b/meta-km-bbb/conf/layer.conf
+@@ -0,0 +1,13 @@
++# We have a conf and classes directory, add to BBPATH
++BBPATH .= ":${LAYERDIR}"
++
++# We have recipes-* directories, add to BBFILES
++BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
++            ${LAYERDIR}/recipes-*/*/*.bbappend"
++
++BBFILE_COLLECTIONS += "meta-km-bbb"
++BBFILE_PATTERN_meta-km-bbb = "^${LAYERDIR}/"
++BBFILE_PRIORITY_meta-km-bbb = "17"
++
++LAYERDEPENDS_meta-km-bbb = "core"
++LAYERSERIES_COMPAT_meta-km-bbb = "warrior zeus"
+diff --git a/meta-km-bbb/recipes-example/example/example_0.1.bb b/meta-km-bbb/recipes-example/example/example_0.1.bb
+new file mode 100644
+index 0000000..c4b873d
+--- /dev/null
++++ b/meta-km-bbb/recipes-example/example/example_0.1.bb
+@@ -0,0 +1,11 @@
++SUMMARY = "bitbake-layers recipe"
++DESCRIPTION = "Recipe created by bitbake-layers"
++LICENSE = "MIT"
++
++python do_build() {
++    bb.plain("***********************************************");
++    bb.plain("*                                             *");
++    bb.plain("*  Example recipe created by bitbake-layers   *");
++    bb.plain("*                                             *");
++    bb.plain("***********************************************");
++}
+diff --git a/meta-km-bbb/recipes-km-bbb-kernel/linux/linux-stable_%.bbappend b/meta-km-bbb/recipes-km-bbb-kernel/linux/linux-stable_%.bbappend
+new file mode 100644
+index 0000000..d10350a
+--- /dev/null
++++ b/meta-km-bbb/recipes-km-bbb-kernel/linux/linux-stable_%.bbappend
+@@ -0,0 +1,2 @@
++FILESEXTRAPATHS_prepend := "${THISDIR}/patches:"
++SRC_URI += "file://0001-Add-Volume-UP-DOWN-Switches.patch"
+diff --git a/meta-km-bbb/recipes-km-bbb-kernel/linux/patches/0001-Add-Volume-UP-DOWN-Switches.patch b/meta-km-bbb/recipes-km-bbb-kernel/linux/patches/0001-Add-Volume-UP-DOWN-Switches.patch
+new file mode 100644
+index 0000000..1e58840
+--- /dev/null
++++ b/meta-km-bbb/recipes-km-bbb-kernel/linux/patches/0001-Add-Volume-UP-DOWN-Switches.patch
+@@ -0,0 +1,42 @@
++From 5dc942172b3d7c139ea73deea370f0dd1a412c7f Mon Sep 17 00:00:00 2001
++From: Kishore Kumar Boddu <kishore@kernelmasters.org>
++Date: Wed, 4 May 2022 21:58:14 +0530
++Subject: [PATCH] Add Volume UP & DOWN Switches
++
++---
++ arch/arm/boot/dts/km-bbb-am335x.dts | 18 +++++++++++++++++-
++ 1 file changed, 17 insertions(+), 1 deletion(-)
++
++diff --git a/arch/arm/boot/dts/km-bbb-am335x.dts b/arch/arm/boot/dts/km-bbb-am335x.dts
++index f8dd33cf5..69c2c4038 100644
++--- a/arch/arm/boot/dts/km-bbb-am335x.dts
+++++ b/arch/arm/boot/dts/km-bbb-am335x.dts
++@@ -44,8 +44,24 @@
++                         gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
++                         wakeup-source;
++                 };
++-	};
++ 
+++		switch26 {
+++                        label = "volume down";
+++                        linux,code = <114>;
+++                        /*linux,code = <KEY_VOLUMEDOWN>;*/
+++                        gpios = <&gpio0 26 GPIO_ACTIVE_HIGH>;
+++                        wakeup-source;
+++                };
+++
+++		switch27 {
+++                        label = "volume up";
+++                        linux,code = <115>;
+++                        /*linux,code = <KEY_VOLUMEUP>;*/
+++                        gpios = <&gpio0 27 GPIO_ACTIVE_HIGH>;
+++                        wakeup-source;
+++                };
+++
+++	};
++ 
++ };
++ 
++-- 
++2.17.1
++
+-- 
+2.17.1
+

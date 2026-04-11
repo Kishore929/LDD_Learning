@@ -1,0 +1,93 @@
+From 799c3316b8f46246e5e6c6753b76eefd31594821 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Wed, 29 Dec 2021 19:02:08 +0530
+Subject: [PATCH] =?UTF-8?q?To=20add=20KM-BBB=20=E2=80=9Cbeagleboneblack-ub?=
+ =?UTF-8?q?oot=E2=80=9D=20repo=20in=20to=20yocto=20project.?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ ...01-Customize-config-and-boot-command.patch | 25 -------------------
+ meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend |  2 +-
+ meta/recipes-bsp/u-boot/u-boot-common.inc     | 16 +++---------
+ 3 files changed, 4 insertions(+), 39 deletions(-)
+ delete mode 100644 meta-bbb/recipes-bsp/u-boot/files/0001-Customize-config-and-boot-command.patch
+
+diff --git a/meta-bbb/recipes-bsp/u-boot/files/0001-Customize-config-and-boot-command.patch b/meta-bbb/recipes-bsp/u-boot/files/0001-Customize-config-and-boot-command.patch
+deleted file mode 100644
+index 8e4b3fe..0000000
+--- a/meta-bbb/recipes-bsp/u-boot/files/0001-Customize-config-and-boot-command.patch
++++ /dev/null
+@@ -1,25 +0,0 @@
+-From 3b7c75826713522d669ea70c0b88c68ef72bba89 Mon Sep 17 00:00:00 2001
+-From: Scott Ellis <scott@jumpnowtek.com>
+-Date: Sun, 10 Nov 2019 08:04:11 -0500
+-Subject: [PATCH] Customize config and boot command
+-
+----
+- configs/am335x_evm_defconfig | 2 +-
+- 1 file changed, 1 insertion(+), 1 deletion(-)
+-
+-diff --git a/configs/am335x_evm_defconfig b/configs/am335x_evm_defconfig
+-index ff96f19..3457c1f 100644
+---- a/configs/am335x_evm_defconfig
+-+++ b/configs/am335x_evm_defconfig
+-@@ -6,7 +6,7 @@ CONFIG_SPL=y
+- CONFIG_DISTRO_DEFAULTS=y
+- CONFIG_SPL_LOAD_FIT=y
+- CONFIG_OF_BOARD_SETUP=y
+--CONFIG_BOOTCOMMAND="if test ${boot_fit} -eq 1; then run update_to_fit; fi; run findfdt; run init_console; run envboot; run distro_bootcmd"
+-+CONFIG_BOOTCOMMAND="run envboot; setenv mmcdev 1; run envboot; setenv mmcdev 0; run findfdt; run distro_bootcmd"
+- CONFIG_LOGLEVEL=3
+- CONFIG_SYS_CONSOLE_INFO_QUIET=y
+- CONFIG_VERSION_VARIABLE=y
+--- 
+-2.7.4
+-
+diff --git a/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend b/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend
+index 905a8a7..e521920 100644
+--- a/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend
++++ b/meta-bbb/recipes-bsp/u-boot/u-boot_%.bbappend
+@@ -1,6 +1,6 @@
+ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+ 
+-SRC_URI += "file://0001-Customize-config-and-boot-command.patch"
++#SRC_URI += "file://0001-Customize-config-and-boot-command.patch"
+ 
+ UBOOT_SUFFIX = "img"
+ SPL_BINARY = "MLO"
+diff --git a/meta/recipes-bsp/u-boot/u-boot-common.inc b/meta/recipes-bsp/u-boot/u-boot-common.inc
+index f63dfa3..232dd04 100644
+--- a/meta/recipes-bsp/u-boot/u-boot-common.inc
++++ b/meta/recipes-bsp/u-boot/u-boot-common.inc
+@@ -1,4 +1,4 @@
+-HOMEPAGE = "http://www.denx.de/wiki/U-Boot/WebHome"
++HOMEPAGE = "https://github.com/kernelmasters"
+ DESCRIPTION = "U-Boot, a boot loader for Embedded boards based on PowerPC, \
+ ARM, MIPS and several other processors, which can be installed in a boot \
+ ROM and used to initialize and test the hardware or to download and run \
+@@ -12,18 +12,8 @@ PE = "1"
+ 
+ # We use the revision in order to avoid having to fetch it from the
+ # repo during parse
+-SRCREV = "e5aee22e4be75e75a854ab64503fc80598bc2004"
++SRCREV = "d06e1db1c02651c8d1a38abd81dc920a342a73f9"
+ 
+-SRC_URI = "git://git.denx.de/u-boot.git \
+-           file://0001-CVE-2019-13103.patch \
+-           file://0002-CVE-2019-13104.patch \
+-           file://0003-CVE-2019-13105.patch \
+-           file://0004-CVE-2019-13106.patch \
+-           file://0005-CVE-2019-14192-14193-14199.patch \
+-           file://0006-CVE-2019-14197-14200-14201-14202-14203-14204.patch \
+-           file://0007-CVE-2019-14194-14198.patch \
+-           file://0008-CVE-2019-14195.patch \
+-           file://0009-CVE-2019-14196.patch \
+-"
++SRC_URI = "git://github.com/kernelmasters/beagleboneblack-uboot.git"
+ 
+ S = "${WORKDIR}/git"
+-- 
+2.17.1
+

@@ -1,0 +1,89 @@
+******************************************************************************************************
+DO NOT install the ARM GCC package that comes with your distribution, especially if it is newer than the one provided by Launchpad, since generally it is not supported, and debugging sessions might fail.
+
+$ sudo apt-get install gdb-arm-none-eabi
+*****************************************************************************************************
+
+How to install Cross compiler/debugger  toolchain:
+-------------------------------------------------
+The following steps were performed on Ubuntu 14.04 LTSx64:
+---------------------------------------------------------
+starting with version 6.x, GNU/Linux toolchains are 64-bits applications, and should work directly on most modern distributions;
+
+in older versions, the toolchain executables are 32-bits apps; when running on 64-bits machines, be sure you install the following 32-bits libraries (for different versions check the toolchain README for the actual list):
+
+$ sudo apt-get -y install lib32z1 lib32ncurses5 lib32bz2-1.0
+
+$ mkdir -p ~/opt
+$ cd ~/opt
+$ tar xvf ~/KM_GIT/bbb/emblinux/toolchain/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf.tar.xz
+
+Add the below line in last line of ~/.bashrc file.
+
+export PATH=/home/kishore/opt/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf/bin:$PATH
+
+
+module debugging through KGDB:
+-----------------------------
+obj-m := hello.o
+
+KDIR=/lib/modules/$(shell uname -r)/build
+PWD=$(shell pwd)
+
+EXTRA_CFLAGS += -g
+
+all:
+        make -C $(KDIR) M=$(PWD) modules
+
+clean:
+        make -C $(KDIR) M=$(PWD) clean
+
+
+A loadable kernel module's location in the memory is set only upon insertion of the module. When you set a breakpoint on a module function, gdb consults the module file (.ko) for the address, which is wrong. You need to inform gdb of the actual location of the module. 
+
+
+System1 (Target) is the debugged system. 
+system2 (Host) is the machine running the debugger.
+
+1. On system1, run modpbrobe your_module_name 
+2. On system1, run the following shell commands: 
+
+MODULE_NAME=your_module_name
+MODULE_FILE=$(modinfo $MODULE_NAME| awk '/filename/{print $2}')
+DIR="/sys/module/${MODULE_NAME}/sections/"
+echo add-symbol-file $MODULE_FILE $(cat "$DIR/.text") -s .bss $(cat "$DIR/.bss") -s .data $(cat "$DIR/.data")
+
+you should get an output similar to the following: 
+add-symbol-file /home/km/4_CDD/2_CharTemp/char.ko 0xffffffffa00b6000 -s .bss 0xffffffffa00b8360 -s .data 0xffffffffa00b8000
+
+3. On system2, run gdb vmlinux. 
+4. On system2, on the gdb console, run the output of the final command in stage 2. 
+5. On system2, on the gdb console, connect to machine1 by running target remote /dev/ttyS0 (assuming your serial port is at ttyS0) 
+6. On system1, run echo g > /proc/sysrq-trigger. The machine will freeze 
+7. On system2, on the gdb console, set the breakpoint as you wish. 
+8. Continue debugging. The breakpoint should be triggered when it needs to. 
+There could be other issues that prevent you from setting the breakpoint, but this is the main hurdle to cross. 
+
+
+*********************************************************************************************
+Install gdb cross compiler:
+--------------------------
+$ file /usr/bin/arm-linux-gnueabi-gcc-4.7
+/usr/bin/arm-linux-gnueabi-gcc-4.7: ELF 64-bit LSB  executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.24, BuildID[sha1]=6eae228bf76962151d3a5308196ae928bfb82587, stripped.
+
+$ file arm-linux-gnueabihf-gdb
+arm-linux-gnueabihf-gdb: ELF 32-bit LSB  executable, Intel 80386, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.15, stripped
+
+ERROR:
+------
+$./arm-linux-gnueabihf-gdb vmlinux
+arm-linux-gnueaihf-gdb: ERROR: cannot open 'arm-linux-gnueabihf-gdb' (No such file or directory)
+
+Solution:
+---------
+Install arm 32 bit compatible package
+$ sudo apt-get install lib32z1-dev lib32ncurses5-dev
+
+****************************************************************************************************
+$ sudo apt-get install socat
+$ socat -d -d /tmp/serial/ PTY

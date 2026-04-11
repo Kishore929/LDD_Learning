@@ -1,0 +1,29 @@
+From 46bb8ded541312bb9059ac8cd2bfd97b8e2416e4 Mon Sep 17 00:00:00 2001
+From: Kishore Kumar Boddu <kishore@kernelmasters.org>
+Date: Fri, 24 Dec 2021 21:50:42 +0530
+Subject: [PATCH]  Enable GPIO9(Buz),10(LED),11(SW) Mux
+
+---
+ board/ti/am335x/mux.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/board/ti/am335x/mux.c b/board/ti/am335x/mux.c
+index 1fa0bc8e..b275da44 100644
+--- a/board/ti/am335x/mux.c
++++ b/board/ti/am335x/mux.c
+@@ -30,9 +30,9 @@ static struct module_pin_mux lcd_pin_mux[] = {
+         {OFFSET(lcd_vsync), (MODE(7) | PULLUDEN)},   /* GPIO2_22 */    //-->KM-LCD_RS
+         {OFFSET(lcd_pclk),  (MODE(7) | PULLUDEN)},   /* GPIO2_24 */    //-->KM-LCD_EN
+         {OFFSET(lcd_hsync), (MODE(7) | PULLUDEN)},   /* GPIO2_23 */    //-->KM-LCD_RW
+-        {OFFSET(lcd_data13), (MODE(0))},             /* lcd_data13 */ // By default disable Buzzer
+-        {OFFSET(lcd_data14), (MODE(0))},             /* lcd_data14 */ // By default disable USER LED
+-        {OFFSET(lcd_data15), (MODE(0))},             /* lcd_data15 */ // Bydefault disable USER SW
++        {OFFSET(lcd_data13), (MODE(7))},             /* lcd_data13.gpio0_9 */ // By default disable Buzzer
++        {OFFSET(lcd_data14), (MODE(7))},             /* lcd_data14/gpio0_10 */ // By default disable USER LED
++        {OFFSET(lcd_data15), (MODE(7) | PULLUDEN | PULLDOWN_EN | RXACTIVE)},             /* lcd_data15.gpio0_11 */ // Bydefault disable USER SW
+ 
+         {-1},
+ };
+-- 
+2.17.1
+

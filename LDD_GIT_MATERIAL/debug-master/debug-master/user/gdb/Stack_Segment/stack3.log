@@ -1,0 +1,297 @@
+kernelmasters@kernelmasters-desktop:~/KM/KM_Workspace/4_C_DS/Class_Notes/Memory_Mangement/Stack_Segment$ gdb ./a.out 
+GNU gdb (GDB) 7.5-ubuntu
+Copyright (C) 2012 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /home/kernelmasters/KM/KM_Workspace/4_C_DS/Class_Notes/Memory_Mangement/Stack_Segment/a.out...done.
+(gdb) l
+1	#include <stdio.h>
+2	
+3	void fun1 (int , int );
+4	
+5	main ()
+6	{
+7	int x,y;
+8	x=4;
+9	y=5;
+10	
+(gdb) l
+11	fun1 (x, y);
+12	
+13	}
+14	
+15	
+16	void fun1 (int a, int b)
+17	{
+18		int x;
+19		x = a;
+20	}
+(gdb) b 7
+Breakpoint 1 at 0x4004d4: file stack3.c, line 7.
+(gdb) b 11
+Breakpoint 2 at 0x4004e2: file stack3.c, line 11.
+(gdb) b 18
+Breakpoint 3 at 0x4004fd: file stack3.c, line 18.
+(gdb) t
+No thread selected
+(gdb) r
+Starting program: /home/kernelmasters/KM/KM_Workspace/4_C_DS/Class_Notes/Memory_Mangement/Stack_Segment/a.out 
+warning: no loadable sections found in added symbol-file system-supplied DSO at 0x7ffff7ffa000
+
+Breakpoint 1, main () at stack3.c:8
+8	x=4;
+(gdb) i r
+rax            0x7ffff7dd6588	140737351869832
+rbx            0x0	0
+rcx            0x400510	4195600
+rdx            0x7fffffffde68	140737488346728
+rsi            0x7fffffffde58	140737488346712
+rdi            0x1	1
+rbp            0x7fffffffdd70	0x7fffffffdd70
+rsp            0x7fffffffdd60	0x7fffffffdd60
+r8             0x4005a0	4195744
+r9             0x7ffff7de9750	140737351948112
+r10            0x7fffffffdbd0	140737488346064
+r11            0x7ffff7a3b680	140737348089472
+r12            0x4003c0	4195264
+r13            0x7fffffffde50	140737488346704
+r14            0x0	0
+r15            0x0	0
+rip            0x4004d4	0x4004d4 <main+8>
+eflags         0x206	[ PF IF ]
+cs             0x33	51
+ss             0x2b	43
+ds             0x0	0
+es             0x0	0
+fs             0x0	0
+gs             0x0	0
+(gdb) disas
+Dump of assembler code for function main:
+   0x00000000004004cc <+0>:	push   %rbp
+   0x00000000004004cd <+1>:	mov    %rsp,%rbp
+   0x00000000004004d0 <+4>:	sub    $0x10,%rsp
+=> 0x00000000004004d4 <+8>:	movl   $0x4,-0x8(%rbp)
+   0x00000000004004db <+15>:	movl   $0x5,-0x4(%rbp)
+   0x00000000004004e2 <+22>:	mov    -0x4(%rbp),%edx
+   0x00000000004004e5 <+25>:	mov    -0x8(%rbp),%eax
+   0x00000000004004e8 <+28>:	mov    %edx,%esi
+   0x00000000004004ea <+30>:	mov    %eax,%edi
+   0x00000000004004ec <+32>:	callq  0x4004f3 <fun1>
+   0x00000000004004f1 <+37>:	leaveq 
+   0x00000000004004f2 <+38>:	retq   
+End of assembler dump.
+(gdb) x/gx $rsp
+0x7fffffffdd60:	0x00007fffffffde50
+(gdb) x/20x $rsp
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000000000000
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+0x7fffffffddf0:	0x0000000000000000	0x0000000000400510
+(gdb) x/20x $rsp-16
+0x7fffffffdd50:	0x0000000000000000	0x00000000004003c0
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000000000000
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+(gdb) n
+9	y=5;
+(gdb) x/20x $rsp
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000000000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+0x7fffffffddf0:	0x0000000000000000	0x0000000000400510
+(gdb) n
+
+Breakpoint 2, main () at stack3.c:11
+11	fun1 (x, y);
+(gdb) x/20x $rsp
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+0x7fffffffddf0:	0x0000000000000000	0x0000000000400510
+(gdb) x/20x $rbp
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+0x7fffffffddf0:	0x0000000000000000	0x0000000000400510
+0x7fffffffde00:	0x00007fffffffde58	0x0000000000000001
+(gdb) x/20x $rbp-16
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+0x7fffffffddf0:	0x0000000000000000	0x0000000000400510
+(gdb) disass
+Dump of assembler code for function main:
+   0x00000000004004cc <+0>:	push   %rbp
+   0x00000000004004cd <+1>:	mov    %rsp,%rbp
+   0x00000000004004d0 <+4>:	sub    $0x10,%rsp
+   0x00000000004004d4 <+8>:	movl   $0x4,-0x8(%rbp)
+   0x00000000004004db <+15>:	movl   $0x5,-0x4(%rbp)
+=> 0x00000000004004e2 <+22>:	mov    -0x4(%rbp),%edx
+   0x00000000004004e5 <+25>:	mov    -0x8(%rbp),%eax
+   0x00000000004004e8 <+28>:	mov    %edx,%esi
+   0x00000000004004ea <+30>:	mov    %eax,%edi
+   0x00000000004004ec <+32>:	callq  0x4004f3 <fun1>
+   0x00000000004004f1 <+37>:	leaveq 
+   0x00000000004004f2 <+38>:	retq   
+End of assembler dump.
+(gdb) n
+
+Breakpoint 3, fun1 (a=4, b=5) at stack3.c:19
+19		x = a;
+(gdb) disass
+Dump of assembler code for function fun1:
+   0x00000000004004f3 <+0>:	push   %rbp
+   0x00000000004004f4 <+1>:	mov    %rsp,%rbp
+   0x00000000004004f7 <+4>:	mov    %edi,-0x14(%rbp)
+   0x00000000004004fa <+7>:	mov    %esi,-0x18(%rbp)
+=> 0x00000000004004fd <+10>:	mov    -0x14(%rbp),%eax
+   0x0000000000400500 <+13>:	mov    %eax,-0x4(%rbp)
+   0x0000000000400503 <+16>:	pop    %rbp
+   0x0000000000400504 <+17>:	retq   
+End of assembler dump.
+(gdb) x/20x $rsp
+0x7fffffffdd50:	0x00007fffffffdd70	0x00000000004004f1
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+(gdb) x/20x $rbp
+0x7fffffffdd50:	0x00007fffffffdd70	0x00000000004004f1
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+(gdb) x/20x $rbp-0x18
+0x7fffffffdd38:	0x0000000400000005	0x0000000000f0b0ff
+0x7fffffffdd48:	0x0000000000400510	0x00007fffffffdd70
+0x7fffffffdd58:	0x00000000004004f1	0x00007fffffffde50
+0x7fffffffdd68:	0x0000000500000004	0x0000000000000000
+0x7fffffffdd78:	0x00007ffff7a3b76d	0x0000000000000000
+0x7fffffffdd88:	0x00007fffffffde58	0x0000000100000000
+0x7fffffffdd98:	0x00000000004004cc	0x0000000000000000
+0x7fffffffdda8:	0x9e33800113734da4	0x00000000004003c0
+0x7fffffffddb8:	0x00007fffffffde50	0x0000000000000000
+0x7fffffffddc8:	0x0000000000000000	0x61cc7ffea8734da4
+(gdb) x/20x $rbp-18
+0x7fffffffdd3e:	0x000000f0b0ff0000	0x0000004005100000
+0x7fffffffdd4e:	0x7fffffffdd700000	0x0000004004f10000
+0x7fffffffdd5e:	0x7fffffffde500000	0x0005000000040000
+0x7fffffffdd6e:	0x0000000000000000	0x7ffff7a3b76d0000
+0x7fffffffdd7e:	0x0000000000000000	0x7fffffffde580000
+0x7fffffffdd8e:	0x0001000000000000	0x0000004004cc0000
+0x7fffffffdd9e:	0x0000000000000000	0x800113734da40000
+0x7fffffffddae:	0x0000004003c09e33	0x7fffffffde500000
+0x7fffffffddbe:	0x0000000000000000	0x0000000000000000
+0x7fffffffddce:	0x7ffea8734da40000	0x6f467d234da461cc
+(gdb) x/20x $rbp
+0x7fffffffdd50:	0x00007fffffffdd70	0x00000000004004f1
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+(gdb) x/20x $rbp-16
+0x7fffffffdd40:	0x0000000000f0b0ff	0x0000000000400510
+0x7fffffffdd50:	0x00007fffffffdd70	0x00000000004004f1
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+(gdb) x/20x $rbp-32
+0x7fffffffdd30:	0x0000000000000001	0x0000000400000005
+0x7fffffffdd40:	0x0000000000f0b0ff	0x0000000000400510
+0x7fffffffdd50:	0x00007fffffffdd70	0x00000000004004f1
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+(gdb) x/20x $rsp
+0x7fffffffdd50:	0x00007fffffffdd70	0x00000000004004f1
+0x7fffffffdd60:	0x00007fffffffde50	0x0000000500000004
+0x7fffffffdd70:	0x0000000000000000	0x00007ffff7a3b76d
+0x7fffffffdd80:	0x0000000000000000	0x00007fffffffde58
+0x7fffffffdd90:	0x0000000100000000	0x00000000004004cc
+0x7fffffffdda0:	0x0000000000000000	0x9e33800113734da4
+0x7fffffffddb0:	0x00000000004003c0	0x00007fffffffde50
+0x7fffffffddc0:	0x0000000000000000	0x0000000000000000
+0x7fffffffddd0:	0x61cc7ffea8734da4	0x61cc6f467d234da4
+0x7fffffffdde0:	0x00007fff00000000	0x0000000000000000
+(gdb) disass
+Dump of assembler code for function fun1:
+   0x00000000004004f3 <+0>:	push   %rbp
+   0x00000000004004f4 <+1>:	mov    %rsp,%rbp
+   0x00000000004004f7 <+4>:	mov    %edi,-0x14(%rbp)
+   0x00000000004004fa <+7>:	mov    %esi,-0x18(%rbp)
+=> 0x00000000004004fd <+10>:	mov    -0x14(%rbp),%eax
+   0x0000000000400500 <+13>:	mov    %eax,-0x4(%rbp)
+   0x0000000000400503 <+16>:	pop    %rbp
+   0x0000000000400504 <+17>:	retq   
+End of assembler dump.
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 13492] will be killed.
+
+Quit anyway? (y or n) y
+
